@@ -1,10 +1,11 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button } from 'react-native'
+import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
-import Signup from './signup'
 
-export default function Login({ navigation }) {
+
+export default function Signup({ navigation: { navigator } }) {
     return (
         <>
             <StatusBar></StatusBar>
@@ -15,18 +16,18 @@ export default function Login({ navigation }) {
                 />
                 <View style={styles.loginView}>
                     <Text style={styles.text}>EMAIL</Text>
-                    <TextInput style={styles.textInput} placeholder={'abc@example.com'}></TextInput>
+                    <TextInput style={styles.textInput}></TextInput>
                     <Text style={styles.text}>PASSWORD</Text>
-                    <TextInput secureTextEntry={true} placeholder={'password'} style={styles.textInput}></TextInput>
+                    <TextInput secureTextEntry={true} style={styles.textInput}></TextInput>
                     < View style={{ marginTop: 50 }}>
                         <TouchableOpacity>
                             <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
-                                <Text style={styles.loginButtonText}>LOG IN</Text>
+                                <Text style={styles.buttonText}>LOG IN</Text>
                             </LinearGradient>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate(Signup)}>
-                            <LinearGradient colors={['white', 'beige']} style={styles.loginButton}>
-                                <Text style={styles.signupButtonText}>CREATE ACCOUNT</Text>
+                        <TouchableOpacity>
+                            <LinearGradient colors={['#00B8D4', '#00897B']} style={styles.loginButton}>
+                                <Text style={styles.buttonText}>CREATE ACCOUNT</Text>
                             </LinearGradient>
                         </TouchableOpacity>
                         <TouchableOpacity style={{ alignItems: 'center' }}>
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontFamily: 'monospace',
-        fontSize: 20,
+        fontSize: 25,
         fontWeight: 'bold',
         color: 'beige'
     },
@@ -84,14 +85,9 @@ const styles = StyleSheet.create({
         height: 45,
         width: 190,
     },
-    loginButtonText: {
+    buttonText: {
         fontWeight: 'bold',
         fontSize: 14,
         color: 'white'
-    },
-    signupButtonText: {
-        fontWeight: 'bold',
-        fontSize: 14,
-        color: 'black'
     }
 })
