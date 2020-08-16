@@ -1,13 +1,38 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button } from 'react-native'
-import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
+
+import validator from 'validator'
+
 import Signup from './signup'
 
 export default function Login({ navigation }) {
+
+    const [credentials, setCredentials] = React.useState({
+        email: '',
+        password: '',
+        isValidEmail: true,
+        isValidPassword: true
+    })
+
+
+    const textInputChange = value => {
+        setCredentials({
+            ...credentials,
+            email: value
+        })
+    }
+
+    const passwordInputChange = value => {
+        setCredentials({
+            ...credentials,
+            password: value
+        })
+    }
+
     return (
         <>
-            <StatusBar></StatusBar>
+            {/* <StatusBar></StatusBar> */}
             <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
                 <Image
                     source={require('../../assets/logo.png')}
@@ -15,22 +40,34 @@ export default function Login({ navigation }) {
                 />
                 <View style={styles.loginView}>
                     <Text style={styles.text}>EMAIL</Text>
-                    <TextInput style={styles.textInput} placeholder={'abc@example.com'}></TextInput>
+                    <TextInput
+                        onChangeText={value => textInputChange(value)}
+                        style={styles.textInput}
+                        placeholder={'abc@example.com'}>
+                    </TextInput>
+                    {credentials.isValidEmail ? null :
+                        <Text style={styles.errormsg}>Please enter a valid email</Text>
+                    }
+
                     <Text style={styles.text}>PASSWORD</Text>
-                    <TextInput secureTextEntry={true} placeholder={'password'} style={styles.textInput}></TextInput>
-                    < View style={{ marginTop: 50 }}>
+                    <TextInput
+                        onChangeText={value => passwordInputChange(value)}
+                        secureTextEntry={true}
+                        placeholder={'password'}
+                        style={styles.textInput}>
+                    </TextInput>
+
+                    {credentials.isValidPassword ? null :
+                        <Text style={styles.errormsg}>Incorrect Email or Password</Text>
+                    }
+                    <TouchableOpacity style={{ alignItems: 'center', paddingLeft: 10 }}>
+                        <Text style={{ color: 'white' }}>Forgot Password?</Text>
+                    </TouchableOpacity>
+                    < View style={{ marginTop: 60, alignItems: 'center', width: '100%' }}>
                         <TouchableOpacity>
                             <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
                                 <Text style={styles.loginButtonText}>LOG IN</Text>
                             </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => navigation.navigate(Signup)}>
-                            <LinearGradient colors={['white', 'beige']} style={styles.loginButton}>
-                                <Text style={styles.signupButtonText}>CREATE ACCOUNT</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={{ alignItems: 'center' }}>
-                            <Text style={{ color: 'white' }}>Forgot Password?</Text>
                         </TouchableOpacity>
                     </ View>
                 </View>
@@ -57,16 +94,16 @@ const styles = StyleSheet.create({
         margin: 20
     },
     loginView: {
-        alignItems: 'center',
+        alignItems: 'flex-start',
         height: '70%',
         width: '100%',
         padding: 20,
     },
     text: {
-        fontFamily: 'monospace',
         fontSize: 20,
         fontWeight: 'bold',
-        color: 'beige'
+        color: 'beige',
+        paddingLeft: 10
     },
     textInput: {
         borderRadius: 15,
@@ -93,5 +130,9 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 14,
         color: 'black'
+    },
+    errormsg: {
+        color: '#ed0000',
+        paddingLeft: 10
     }
 })

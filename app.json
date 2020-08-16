@@ -21,6 +21,7 @@
     },
     "web": {
       "favicon": "./assets/icon.png"
-    }
+    },
+    "description": ""
   }
 }

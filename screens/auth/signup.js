@@ -1,37 +1,34 @@
 import React from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button } from 'react-native'
-import { NavigationContainer } from '@react-navigation/native'
+import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button, KeyboardAvoidingView } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
 
-
-export default function Signup({ navigation: { navigator } }) {
+export default function Signup() {
     return (
         <>
             <StatusBar></StatusBar>
             <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
-                <Image
-                    source={require('../../assets/logo.png')}
-                    style={styles.logo}
-                />
+
                 <View style={styles.loginView}>
+                    <View>
+                        <Text style={styles.titleText1}>WELCOME TO</Text>
+                        <Text style={styles.titleText2}>PARKZAPP</Text>
+                    </View>
+                    <Text style={styles.text}>NAME</Text>
+                    <TextInput style={styles.textInput} placeholder={'John Doe'} ></TextInput>
                     <Text style={styles.text}>EMAIL</Text>
-                    <TextInput style={styles.textInput}></TextInput>
+                    <TextInput style={styles.textInput} placeholder={'abc@example.com'}></TextInput>
+                    <Text style={styles.text}>PHONE</Text>
+                    <TextInput style={styles.textInput} placeholder={'0123456789'}></TextInput>
                     <Text style={styles.text}>PASSWORD</Text>
-                    <TextInput secureTextEntry={true} style={styles.textInput}></TextInput>
-                    < View style={{ marginTop: 50 }}>
+                    <TextInput secureTextEntry={true} placeholder={'password'} style={styles.textInput}></TextInput>
+                    <Text style={styles.text}>CONFIRM PASSWORD</Text>
+                    <TextInput secureTextEntry={true} placeholder={'password'} style={styles.textInput}></TextInput>
+                    < View style={{ marginTop: 8, alignItems: 'center' }}>
                         <TouchableOpacity>
                             <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
-                                <Text style={styles.buttonText}>LOG IN</Text>
+                                <Text style={styles.signupButtonText}>CREATE ACCOUNT</Text>
                             </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity>
-                            <LinearGradient colors={['#00B8D4', '#00897B']} style={styles.loginButton}>
-                                <Text style={styles.buttonText}>CREATE ACCOUNT</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={{ alignItems: 'center' }}>
-                            <Text style={{ color: 'white' }}>Forgot Password?</Text>
                         </TouchableOpacity>
                     </ View>
                 </View>
@@ -45,29 +42,31 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
         padding: 10
     },
-    logo: {
-        marginTop: 20,
-        borderRadius: 20,
-        height: 140,
-        width: 140,
-        margin: 20
+    titleText1: {
+        color: 'white',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    titleText2: {
+        color: '#cafae1',
+        fontSize: 50,
+        fontWeight: 'bold',
     },
     loginView: {
-        alignItems: 'center',
+        marginTop: 90,
+        justifyContent: 'center',
         height: '70%',
         width: '100%',
-        padding: 20,
+        padding: 10
+
     },
     text: {
-        fontFamily: 'monospace',
-        fontSize: 25,
+        fontSize: 15,
         fontWeight: 'bold',
-        color: 'beige'
+        color: 'beige',
+        paddingLeft: 8
     },
     textInput: {
         borderRadius: 15,
@@ -79,13 +78,12 @@ const styles = StyleSheet.create({
     },
     loginButton: {
         alignItems: 'center',
-        marginBottom: 15,
         justifyContent: 'center',
         borderRadius: 30,
         height: 45,
         width: 190,
     },
-    buttonText: {
+    signupButtonText: {
         fontWeight: 'bold',
         fontSize: 14,
         color: 'white'
