@@ -22,6 +22,7 @@
     "web": {
       "favicon": "./assets/icon.png"
     },
-    "description": ""
+    "description": "Android and iOS application Project for Federation University",
+    "githubUrl": "https://github.com/dvishist/parkzapp-client"
   }
 }

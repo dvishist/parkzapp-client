@@ -32,7 +32,6 @@ export default function Login({ navigation }) {
 
     return (
         <>
-            {/* <StatusBar></StatusBar> */}
             <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
                 <Image
                     source={require('../../assets/logo.png')}
@@ -87,7 +86,7 @@ const styles = StyleSheet.create({
         padding: 10
     },
     logo: {
-        marginTop: 20,
+        marginTop: 80,
         borderRadius: 20,
         height: 140,
         width: 140,
