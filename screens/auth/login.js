@@ -2,11 +2,15 @@ import React from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 
+import { AuthContext } from '../../components/context'
+
 import validator from 'validator'
 
-import Signup from './signup'
+
 
 export default function Login({ navigation }) {
+
+
 
     const [credentials, setCredentials] = React.useState({
         email: '',
@@ -15,6 +19,11 @@ export default function Login({ navigation }) {
         isValidPassword: true
     })
 
+    const { signIn } = React.useContext(AuthContext)
+
+    const loginHandle = (email, password) => {
+        signIn(email, password)
+    }
 
     const textInputChange = value => {
         setCredentials({
@@ -63,7 +72,7 @@ export default function Login({ navigation }) {
                         <Text style={{ color: 'white' }}>Forgot Password?</Text>
                     </TouchableOpacity>
                     < View style={{ marginTop: 60, alignItems: 'center', width: '100%' }}>
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => loginHandle(credentials.email, credentials.password)}>
                             <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
                                 <Text style={styles.loginButtonText}>LOG IN</Text>
                             </LinearGradient>
