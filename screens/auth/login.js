@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button } from 'react-native'
+import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, ActivityIndicator, Image, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 
 import { AuthContext } from '../../components/context'
@@ -9,6 +9,8 @@ import validator from 'validator'
 
 
 export default function Login({ navigation }) {
+
+    const [loading, setLoading] = React.useState(false)
 
     //login state to verify user loggedin with correct credentials
     const [credentials, setCredentials] = React.useState({
@@ -22,8 +24,15 @@ export default function Login({ navigation }) {
     const { signIn } = React.useContext(AuthContext)
 
     //function to execute on login button press
-    const loginHandle = (email, password) => {
-        signIn(email, password)
+    const loginHandle = async (email, password) => {
+        if (email === 'admin' && password === 'password') {
+            signIn(email, 'fakeToken')
+        } else {
+            setCredentials({
+                ...credentials, isValidPassword: false
+            })
+        }
+
     }
 
     // to update email state on text change in email field
@@ -42,49 +51,55 @@ export default function Login({ navigation }) {
         })
     }
 
-    return (
-        <>
-            <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
-                <Image
-                    source={require('../../assets/logo.png')}
-                    style={styles.logo}
-                />
-                <View style={styles.loginView}>
-                    <Text style={styles.text}>EMAIL</Text>
-                    <TextInput
-                        onChangeText={value => textInputChange(value)}
-                        style={styles.textInput}
-                        placeholder={'abc@example.com'}>
-                    </TextInput>
-                    {credentials.isValidEmail ? null :
-                        <Text style={styles.errormsg}>Please enter a valid email</Text>
-                    }
+    return loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size='large' />
+        </View>) : (
+            <>
+                <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
+                    <Image
+                        source={require('../../assets/logo.png')}
+                        style={styles.logo}
+                    />
+                    <View style={styles.loginView}>
+                        <Text style={styles.text}>EMAIL</Text>
+                        <TextInput
+                            onChangeText={value => textInputChange(value)}
+                            style={styles.textInput}
+                            placeholder={'abc@example.com'}
+                            autoCapitalize='none'
+                        >
+                        </TextInput>
+                        {credentials.isValidEmail ? null :
+                            <Text style={styles.errormsg}>Please enter a valid email</Text>
+                        }
 
-                    <Text style={styles.text}>PASSWORD</Text>
-                    <TextInput
-                        onChangeText={value => passwordInputChange(value)}
-                        secureTextEntry={true}
-                        placeholder={'password'}
-                        style={styles.textInput}>
-                    </TextInput>
+                        <Text style={styles.text}>PASSWORD</Text>
+                        <TextInput
+                            onChangeText={value => passwordInputChange(value)}
+                            secureTextEntry={true}
+                            placeholder={'password'}
+                            autoCapitalize='none'
+                            style={styles.textInput}>
+                        </TextInput>
 
-                    {credentials.isValidPassword ? null :
-                        <Text style={styles.errormsg}>Incorrect Email or Password</Text>
-                    }
-                    <TouchableOpacity style={{ alignItems: 'center', paddingLeft: 10 }}>
-                        <Text style={{ color: 'white' }}>Forgot Password?</Text>
-                    </TouchableOpacity>
-                    < View style={{ marginTop: 60, alignItems: 'center', width: '100%' }}>
-                        <TouchableOpacity onPress={() => loginHandle(credentials.email, credentials.password)}>
-                            <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
-                                <Text style={styles.loginButtonText}>LOG IN</Text>
-                            </LinearGradient>
+                        {credentials.isValidPassword ? null :
+                            <Text style={styles.errormsg}>Incorrect Email or Password</Text>
+                        }
+                        <TouchableOpacity style={{ alignItems: 'center', paddingLeft: 10 }}>
+                            <Text style={{ color: 'white' }}>Forgot Password?</Text>
                         </TouchableOpacity>
-                    </ View>
-                </View>
-            </LinearGradient>
-        </>
-    )
+                        < View style={{ marginTop: 60, alignItems: 'center', width: '100%' }}>
+                            <TouchableOpacity onPress={() => loginHandle(credentials.email, credentials.password)}>
+                                <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
+                                    <Text style={styles.loginButtonText}>LOG IN</Text>
+                                </LinearGradient>
+                            </TouchableOpacity>
+                        </ View>
+                    </View>
+                </LinearGradient>
+            </>
+        )
 }
 
 const styles = StyleSheet.create({

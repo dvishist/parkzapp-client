@@ -61,15 +61,11 @@ export default function App() {
 
   //define the actual functions to execute on each event
   const authContext = React.useMemo(() => ({
-    signIn: async (email, password) => {
-      let userToken = null
-      if (email === 'admin' && password === '1234') {
-        userToken = 'token'
-        try {
-          await AsyncStorage.setItem('userToken', userToken)
-        } catch (e) {
-          console.log(e)
-        }
+    signIn: async (email, userToken) => {
+      try {
+        await AsyncStorage.setItem('userToken', userToken)
+      } catch (e) {
+        console.log(e)
       }
       dispatch({ type: 'login', email, token: userToken })
     },
@@ -82,10 +78,14 @@ export default function App() {
       dispatch({ type: 'logout' })
 
     },
-    signUp: () => {
-      setUserToken('asd')
-      setIsLoading(false)
-    }
+    // signUp: async (email,password) => {
+    //   try {
+    //     await AsyncStorage.setItem('userToken',userToken)
+    //   } catch (e) {
+    //     console.log(e)
+    //   }
+    //   dispatch({ type: 'logout' })
+    // }
   }), [])
 
   useEffect(() => {
