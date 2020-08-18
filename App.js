@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import Ionicons from 'react-native-vector-icons/Ionicons'
+import AsyncStorage from '@react-native-community/async-storage'
 
 import Dashboard from './screens/dashboard'
 
@@ -17,12 +18,15 @@ export default function App() {
   // const [isLoading, setIsLoading] = React.useState(true)
   // const [userToken, setUserToken] = React.useState(null)
 
+
+  //setup starting state of the app
   const initialLoginState = {
-    isLoading: true,
+    isLoading: false,
     email: null,
     userToken: null
   }
 
+  //reducer to execute different authentication scenarios
   const loginReducer = (prevState, action) => {
     switch (action.type) {
       case 'check-token':
@@ -32,7 +36,6 @@ export default function App() {
           userToken: action.token
         }
       case 'login':
-        console.log('login')
         return {
           ...prevState,
           isLoading: false,
@@ -53,19 +56,31 @@ export default function App() {
     }
   }
 
+  //using the reducer to handle auth events (login,signup,logout and app bootup)
   const [loginState, dispatch] = React.useReducer(loginReducer, initialLoginState)
 
+  //define the actual functions to execute on each event
   const authContext = React.useMemo(() => ({
-    signIn: (email, password) => {
+    signIn: async (email, password) => {
       let userToken = null
       if (email === 'admin' && password === '1234') {
         userToken = 'token'
+        try {
+          await AsyncStorage.setItem('userToken', userToken)
+        } catch (e) {
+          console.log(e)
+        }
       }
       dispatch({ type: 'login', email, token: userToken })
     },
-    signOut: () => {
-      setUserToken(null)
-      setIsLoading(false)
+    signOut: async () => {
+      try {
+        await AsyncStorage.removeItem('userToken')
+      } catch (e) {
+        console.log(e)
+      }
+      dispatch({ type: 'logout' })
+
     },
     signUp: () => {
       setUserToken('asd')
@@ -73,20 +88,36 @@ export default function App() {
     }
   }), [])
 
-  // useEffect(() => {
-  //   dispatch({ type: 'check-token', token: 'token' })
-  // })
+  useEffect(() => {
+    async function getToken() {
+      let userToken = null
+      try {
+        userToken = await AsyncStorage.getItem('userToken')
+      } catch (e) {
+        console.log(e)
+      }
+      dispatch({ type: 'check-token', token: userToken })
+    }
+    getToken()
+  }, [])
 
-  // if (loginState.isLoading) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-  //       <ActivityIndicator size='large' />
-  //     </View>
-  //   )
-  // }
+  if (loginState.isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size='large' />
+      </View>
+    )
+  }
 
+
+  //verify user logged in and show the dashboard or login page respective to the scenario
   if (loginState.userToken) {
-    return (<Dashboard></Dashboard>)
+    return (
+      <AuthContext.Provider value={authContext}>
+        <Dashboard></Dashboard>
+      </AuthContext.Provider>
+
+    )
   } else {
     return (
       <AuthContext.Provider value={authContext}>

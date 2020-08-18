@@ -10,8 +10,7 @@ import validator from 'validator'
 
 export default function Login({ navigation }) {
 
-
-
+    //login state to verify user loggedin with correct credentials
     const [credentials, setCredentials] = React.useState({
         email: '',
         password: '',
@@ -19,12 +18,15 @@ export default function Login({ navigation }) {
         isValidPassword: true
     })
 
+    //using the authContext created in App.js, which contains the loginReducer
     const { signIn } = React.useContext(AuthContext)
 
+    //function to execute on login button press
     const loginHandle = (email, password) => {
         signIn(email, password)
     }
 
+    // to update email state on text change in email field
     const textInputChange = value => {
         setCredentials({
             ...credentials,
@@ -32,6 +34,7 @@ export default function Login({ navigation }) {
         })
     }
 
+    // to update password state on text change in password field
     const passwordInputChange = value => {
         setCredentials({
             ...credentials,
