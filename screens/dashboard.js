@@ -21,7 +21,6 @@ export default function Dashboard() {
 
                 const avatar = await axios.get(`users/${data._id}/avatar`)
                 setUserProfile({ ...data, avatar })
-                console.log(avatar)
             } catch (err) {
                 console.log(err)
             }
@@ -44,7 +43,17 @@ export default function Dashboard() {
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            <Image fadeDuration={0} style={{ height: 100, width: 100 }} source={{ uri: `https://park-zapp.herokuapp.com/users/5f3cdf5a6b32c400174d6fd2/avatar` }}></Image>
+            {userProfile ?
+                <Image
+                    onLoad={() => null}
+                    fadeDuration={0}
+                    style={{ height: 150, width: 150, backgroundColor: 'gray', borderRadius: 100 }}
+                    defaultource={require('../assets/user.jpg')}
+                    source={{ uri: `https://park-zapp.herokuapp.com/users/${userProfile._id}/avatar` }}
+                >
+                </Image>
+                : null
+            }
             <Text>Logged in as {userProfile ? userProfile.name : ''}</Text>
             <Button title='Log Out' onPress={() => signoutHandle()}></Button>
 
