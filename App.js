@@ -23,6 +23,7 @@ export default function App() {
   const initialLoginState = {
     isLoading: false,
     email: null,
+    id: null,
     userToken: null
   }
 
@@ -40,14 +41,16 @@ export default function App() {
           ...prevState,
           isLoading: false,
           userToken: action.token,
-          email: action.email
+          email: action.email,
+          id: action._id
         }
       case 'logout':
         return {
           ...prevState,
           isLoading: false,
           userToken: null,
-          email: null
+          email: null,
+          id: null
         }
       case 'signup':
         return {
@@ -61,13 +64,13 @@ export default function App() {
 
   //define the actual functions to execute on each event
   const authContext = React.useMemo(() => ({
-    signIn: async (email, userToken) => {
+    signIn: async (email, _id, userToken) => {
       try {
         await AsyncStorage.setItem('userToken', userToken)
       } catch (e) {
         console.log(e)
       }
-      dispatch({ type: 'login', email, token: userToken })
+      dispatch({ type: 'login', email, _id, token: userToken })
     },
     signOut: async () => {
       try {
@@ -101,13 +104,6 @@ export default function App() {
     getToken()
   }, [])
 
-  if (loginState.isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size='large' />
-      </View>
-    )
-  }
 
 
   //verify user logged in and show the dashboard or login page respective to the scenario

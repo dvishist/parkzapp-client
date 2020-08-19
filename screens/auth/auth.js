@@ -1,11 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, Image } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
 import Ionicons from 'react-native-vector-icons/Ionicons'
-import MaterialCommunityIcons from 'react-native-vector-icons'
 
 import Login from './login'
 import Signup from './signup'
@@ -39,11 +36,3 @@ export default function App() {
         </NavigationContainer >
     )
 }
-
-
-const styles = StyleSheet.create({
-    navigation: {
-        backgroundColor: 'white',
-        justifyContent: 'space-evenly'
-    }
-})

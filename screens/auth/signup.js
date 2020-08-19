@@ -2,7 +2,10 @@ import React from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button, KeyboardAvoidingView, ScrollView } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
+import { AuthContext } from '../../components/context'
+import axios from 'axios'
 
+import API_URL from '../../components/apiurl'
 
 export default function Signup() {
     return (

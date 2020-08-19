@@ -1,14 +1,15 @@
 import React from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, ActivityIndicator, Image, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
-
-import { AuthContext } from '../../components/context'
-
+import axios from 'axios'
 import validator from 'validator'
 
-
+import { AuthContext } from '../../components/context'
+import API_URL from '../../components/apiurl'
 
 export default function Login({ navigation }) {
+    axios.defaults.baseURL = API_URL;
+
 
     const [loading, setLoading] = React.useState(false)
 
@@ -25,13 +26,29 @@ export default function Login({ navigation }) {
 
     //function to execute on login button press
     const loginHandle = async (email, password) => {
-        if (email === 'admin' && password === 'password') {
-            signIn(email, 'fakeToken')
-        } else {
+        setCredentials({ ...credentials, isValidEmail: true, isValidPassword: true })
+        email = email.trim().toLowerCase()
+        if (!validator.isEmail(email)) {
             setCredentials({
-                ...credentials, isValidPassword: false
+                ...credentials, isValidEmail: false
+            })
+            return
+        }
+        try {
+            const { data } = await axios.post('/users/login', { email, password })
+            signIn(data.user.email, data.user._id, data.token)
+        } catch (err) {
+            setCredentials({
+                ...credentials, isValidEmail: true, isValidPassword: false
             })
         }
+        // if (email === 'admin' && password === 'password') {
+        //     
+        // } else {
+        //     setCredentials({
+        //         ...credentials, isValidPassword: false
+        //     })
+        // }
 
     }
 
