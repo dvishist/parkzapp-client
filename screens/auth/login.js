@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, ActivityIndicator, Image, Alert } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, TextInput, View, ActivityIndicator, Image, Alert } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient'
 import axios from 'axios'
 import validator from 'validator'

@@ -1,32 +1,20 @@
 import React, { useEffect } from 'react'
 import { View, Text, Button, Image } from 'react-native'
 import axios from 'axios'
-import AsyncStorage from '@react-native-community/async-storage'
 
-import API_URL from '../components/apiurl'
+import { NavigationContainer } from '@react-navigation/native'
+import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
+
 
 import { AuthContext } from '../components/context'
-
+import HomeScreen from '../screens/appScreens/HomeScreen'
+import ProfileScreen from '../screens/appScreens/ProfileScreen'
 
 
 export default function Dashboard() {
-    const [userProfile, setUserProfile] = React.useState(null)
-    axios.defaults.baseURL = API_URL;
-    useEffect(() => {
-        async function setup() {
-            try {
-                const userToken = await AsyncStorage.getItem('userToken')
-                axios.defaults.headers.common['Authorization'] = userToken
-                const { data } = await axios.get('users/self')
 
-                const avatar = await axios.get(`users/${data._id}/avatar`)
-                setUserProfile({ ...data, avatar })
-            } catch (err) {
-                console.log(err)
-            }
-        }
-        setup()
-    }, [])
 
 
     const { signOut } = React.useContext(AuthContext)
@@ -41,22 +29,43 @@ export default function Dashboard() {
 
     }
 
-    return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-            {userProfile ?
-                <Image
-                    onLoad={() => null}
-                    fadeDuration={0}
-                    style={{ height: 150, width: 150, backgroundColor: 'gray', borderRadius: 100 }}
-                    defaultource={require('../assets/user.jpg')}
-                    source={{ uri: `https://park-zapp.herokuapp.com/users/${userProfile._id}/avatar` }}
-                >
-                </Image>
-                : null
-            }
-            <Text>Logged in as {userProfile ? userProfile.name : ''}</Text>
-            <Button title='Log Out' onPress={() => signoutHandle()}></Button>
+    const Tabs = createMaterialBottomTabNavigator()
 
-        </View>
+    return (
+        <NavigationContainer>
+            <Tabs.Navigator
+                activeColor='white'
+                inactiveColor='gray'
+                barStyle={{ backgroundColor: '#5cdb94' }}
+                screenOptions={({ route }) => ({
+                    tabBarIcon: ({ focused }) => {
+                        let iconName
+                        let color
+                        if (route.name === 'Login') {
+                            iconName = 'ios-person'
+                            color = focused ? 'white' : 'gray'
+                        } else {
+                            iconName = 'md-person-add'
+                            color = focused ? 'white' : 'gray'
+                        }
+                        switch (route.name) {
+                            case 'Home':
+                                iconName = 'ios-person'
+                                color = focused ? 'white' : 'gray'
+                            case 'Profile':
+                                iconName = 'ios-person'
+                                color = focused ? 'white' : 'gray'
+
+                        }
+
+                        return <Ionicons name={iconName} size={20} color={color} />
+                    }
+                })}
+            >
+                <Tabs.Screen name='Home' component={HomeScreen} />
+                <Tabs.Screen name='Profile' component={ProfileScreen} />
+            </Tabs.Navigator>
+        </NavigationContainer>
+
     )
 }

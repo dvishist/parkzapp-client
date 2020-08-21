@@ -1,9 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, ActivityIndicator, View } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native'
-import { createStackNavigator } from '@react-navigation/stack'
-import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
-import Ionicons from 'react-native-vector-icons/Ionicons'
+
 import AsyncStorage from '@react-native-community/async-storage'
 
 import Dashboard from './screens/dashboard'
@@ -12,12 +8,7 @@ import { AuthContext } from './components/context'
 
 import Auth from './screens/auth/auth'
 
-const Tabs = createMaterialBottomTabNavigator()
-
 export default function App() {
-  // const [isLoading, setIsLoading] = React.useState(true)
-  // const [userToken, setUserToken] = React.useState(null)
-
 
   //setup starting state of the app
   const initialLoginState = {
@@ -80,15 +71,7 @@ export default function App() {
       }
       dispatch({ type: 'logout' })
 
-    },
-    // signUp: async (email,password) => {
-    //   try {
-    //     await AsyncStorage.setItem('userToken',userToken)
-    //   } catch (e) {
-    //     console.log(e)
-    //   }
-    //   dispatch({ type: 'logout' })
-    // }
+    }
   }), [])
 
   useEffect(() => {
