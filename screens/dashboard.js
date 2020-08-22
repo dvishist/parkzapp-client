@@ -6,10 +6,10 @@ import { createMaterialBottomTabNavigator } from '@react-navigation/material-bot
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
 
-import HomeScreen from './appScreens/OptionScreen'
+import HomeScreen from './appScreens/HomeScreen'
 import HistoryScreen from '../screens/appScreens/HistoryScreen'
 import VehicleScreen from '../screens/appScreens/VehicleScreen'
-import OptionScreen from './appScreens/HomeScreen'
+import OptionScreen from './appScreens/OptionScreen'
 
 
 export default function Dashboard() {
@@ -17,7 +17,7 @@ export default function Dashboard() {
 
     return (
         <>
-            <StatusBar backgroundColor={'white'}></StatusBar>
+            <StatusBar backgroundColor='#5cdb94'></StatusBar>
             <NavigationContainer>
                 <Tabs.Navigator
                     activeColor='white'

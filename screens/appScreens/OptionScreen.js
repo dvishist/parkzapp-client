@@ -8,6 +8,7 @@ import { AuthContext } from '../../components/context'
 export default function OptionScreen() {
     const [userProfile, setUserProfile] = React.useState(null)
     axios.defaults.baseURL = API_URL;
+
     useEffect(() => {
         async function setup() {
             try {
