@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StatusBar, StyleSheet, Text, TouchableOpacity, TextInput, View, Image, Button, KeyboardAvoidingView, ScrollView } from 'react-native'
 import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -10,11 +10,24 @@ import validator from 'validator';
 
 
 export default function Signup() {
+    const [loading, setLoading] = React.useState(false)
     const [formValues, setFormValues] = React.useState(null)
     const [isValidEmail, setIsValidEmail] = React.useState(true)
     const [isUniqueEmail, setIsUniqueEmail] = React.useState(true)
     const [isMatchingPassword, setIsMatchingPassword] = React.useState(true)
     const [isPasswordLength, setisPasswordLength] = React.useState(true)
+    const [isNameProvided, setIsNameProvided] = React.useState(true)
+
+    useState(() => {
+        setFormValues({
+            name: '',
+            email: '',
+            phone: '',
+            password: '',
+            confirmPassword: ''
+        })
+    })
+
 
     const { signIn } = React.useContext(AuthContext)
 
@@ -31,27 +44,32 @@ export default function Signup() {
         setIsMatchingPassword(true)
         setisPasswordLength(true)
 
+        let valid = true
+
+        if (!formValues.name) {
+            setIsNameProvided(false)
+            valid = false
+        } else setIsNameProvided(true)
+
         if (!formValues.email || !validator.isEmail(formValues.email)) {
             setIsValidEmail(false)
-            return
-        }
-
-        if (!formValues.password || !formValues.confirmPassword) {
-            setIsMatchingPassword(false)
-            return
+            valid = false
         }
 
         if (formValues.password !== formValues.confirmPassword) {
             setIsMatchingPassword(false)
-            return
+            valid = false
         }
 
         if (formValues.password.length < 8 || formValues.confirmPassword.length < 8) {
             setisPasswordLength(false)
-            return
+            valid = false
         }
 
+        if (!valid) return
+
         const { name, email, phone, password } = formValues
+        setLoading(true)
         try {
             const user = await axios.post('/users', { name, email, phone, password })
             if (user) {
@@ -59,7 +77,10 @@ export default function Signup() {
                 signIn(data.user.email, data.user._id, data.token)
             }
         } catch (err) {
-            console.log(err)
+            if (err.response.data.includes('E11000 duplicate key error collection: parkzapp.users index: email_1 dup key:')) {
+                setIsUniqueEmail(false)
+            }
+            setLoading(false)
         }
     }
 
@@ -68,7 +89,6 @@ export default function Signup() {
         <>
             <ScrollView>
                 <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
-
                     <View style={styles.loginView}>
                         <View>
                             <Text style={styles.titleText1}>WELCOME TO</Text>
@@ -76,6 +96,7 @@ export default function Signup() {
                         </View>
                         <Text style={styles.text}>NAME</Text>
                         <TextInput style={styles.textInput} placeholder={'John Doe'} onChangeText={value => formInputChange('name', value)}></TextInput>
+                        {isNameProvided ? null : <Text style={styles.errormsg}>Please enter a name</Text>}
                         <Text style={styles.text}>EMAIL</Text>
                         <TextInput autoCapitalize='none' style={styles.textInput} placeholder={'abc@example.com'} onChangeText={value => formInputChange('email', value)}></TextInput>
                         {isValidEmail ? null : <Text style={styles.errormsg}>Please enter a valid email</Text>}
@@ -91,7 +112,7 @@ export default function Signup() {
                         < View style={{ marginTop: 8, alignItems: 'center' }}>
                             <TouchableOpacity onPress={signUp}>
                                 <LinearGradient colors={['#00BFA5', '#43A047']} style={styles.loginButton}>
-                                    <Text style={styles.signupButtonText}>CREATE ACCOUNT</Text>
+                                    <Text style={styles.signupButtonText}>{loading ? 'Loading...' : 'CREATE ACCOUNT'}</Text>
                                 </LinearGradient>
                             </TouchableOpacity>
                         </ View>
@@ -107,7 +128,6 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         height: '100%',
-        paddingVertical: 20,
         paddingHorizontal: 10
     },
     titleText1: {

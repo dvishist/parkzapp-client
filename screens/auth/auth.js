@@ -8,7 +8,9 @@ import Signup from './signup'
 
 const Tabs = createMaterialBottomTabNavigator()
 
+
 export default function App() {
+
     return (
         <NavigationContainer>
             <Tabs.Navigator
