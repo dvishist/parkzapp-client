@@ -52,7 +52,7 @@ export default function HomeScreen() {
                 longitudeDelta: locationState.longitudeDelta
             }}
         >
-            {/* <Marker /> */}
+
         </MapView>
 
     )

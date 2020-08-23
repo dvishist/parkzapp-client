@@ -5,11 +5,13 @@ import AsyncStorage from '@react-native-community/async-storage'
 import Dashboard from './screens/dashboard'
 
 import { AuthContext } from './components/context'
-
+import axios from 'axios'
 import Auth from './screens/auth/auth'
+import API_URL from './components/apiurl'
+
 
 export default function App() {
-
+  axios.defaults.baseURL = API_URL;
   //setup starting state of the app
   const initialLoginState = {
     isLoading: false,
@@ -76,13 +78,18 @@ export default function App() {
 
   useEffect(() => {
     async function getToken() {
+      let validLogin = false
       let userToken = null
       try {
         userToken = await AsyncStorage.getItem('userToken')
+        console.log(userToken)
+        validLogin = await axios.get(`/users/verify/${userToken}`)
       } catch (e) {
         console.log(e)
       }
-      dispatch({ type: 'check-token', token: userToken })
+      validLogin ?
+        dispatch({ type: 'check-token', token: userToken })
+        : dispatch({ type: 'logout' })
     }
     getToken()
   }, [])

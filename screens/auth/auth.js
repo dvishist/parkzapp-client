@@ -34,6 +34,6 @@ export default function App() {
                 <Tabs.Screen name='Login' component={Login} />
                 <Tabs.Screen name='Signup' component={Signup} />
             </Tabs.Navigator>
-        </NavigationContainer >
+        </NavigationContainer>
     )
 }

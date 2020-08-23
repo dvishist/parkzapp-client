@@ -4,7 +4,6 @@ import { createStackNavigator } from '@react-navigation/stack'
 import { LinearGradient } from 'expo-linear-gradient'
 import { AuthContext } from '../../components/context'
 import axios from 'axios'
-import API_URL from '../../components/apiurl'
 import validator from 'validator';
 
 
