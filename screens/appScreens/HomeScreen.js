@@ -23,8 +23,7 @@ export default function HomeScreen() {
                 navigator.geolocation.getCurrentPosition(
                     ({ coords: { latitude, longitude } }) => {
                         setState({ ...locationState, latitude, longitude })
-                    }
-                    ,
+                    },
                     error => console.log(error)
                 )
             } catch (err) {
@@ -39,12 +38,12 @@ export default function HomeScreen() {
         <MapView
             showsUserLocation
             style={styles.map}
-            initialRegion={{
-                latitude: locationState.latitude,
-                longitude: locationState.longitude,
-                latitudeDelta: locationState.latitudeDelta,
-                longitudeDelta: locationState.longitudeDelta
-            }}
+            // initialRegion={{
+            //     latitude: locationState.latitude,
+            //     longitude: locationState.longitude,
+            //     latitudeDelta: locationState.latitudeDelta,
+            //     longitudeDelta: locationState.longitudeDelta
+            // }}
             region={{
                 latitude: locationState.latitude,
                 longitude: locationState.longitude,

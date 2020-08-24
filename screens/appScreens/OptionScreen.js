@@ -9,6 +9,12 @@ export default function OptionScreen() {
     const [userProfile, setUserProfile] = React.useState(null)
     axios.defaults.baseURL = API_URL;
 
+    const { signOut } = React.useContext(AuthContext)
+
+    const signOutHandle = () => {
+        signOut()
+    }
+
     useEffect(() => {
         async function setup() {
             try {
@@ -23,11 +29,6 @@ export default function OptionScreen() {
         setup()
     }, [])
 
-    const { signOut } = React.useContext(AuthContext)
-
-    const signOutHandle = () => {
-        signOut()
-    }
 
 
     return (

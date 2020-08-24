@@ -8,10 +8,11 @@ import { AuthContext } from './components/context'
 import axios from 'axios'
 import Auth from './screens/auth/auth'
 import API_URL from './components/apiurl'
+import { ActivityIndicator } from 'react-native';
 
 
 export default function App() {
-  axios.defaults.baseURL = API_URL;
+  axios.defaults.baseURL = API_URL
   //setup starting state of the app
   const initialLoginState = {
     isLoading: false,
@@ -19,6 +20,8 @@ export default function App() {
     id: null,
     userToken: null
   }
+
+  const [isLoading, setIsLoading] = React.useState(true)
 
   //reducer to execute different authentication scenarios
   const loginReducer = (prevState, action) => {
@@ -82,14 +85,18 @@ export default function App() {
       let userToken = null
       try {
         userToken = await AsyncStorage.getItem('userToken')
-        console.log(userToken)
         validLogin = await axios.get(`/users/verify/${userToken}`)
       } catch (e) {
         console.log(e)
       }
-      validLogin ?
+      setIsLoading(false)
+      if (validLogin) {
         dispatch({ type: 'check-token', token: userToken })
-        : dispatch({ type: 'logout' })
+      } else {
+        dispatch({ type: 'logout' })
+      }
+
+
     }
     getToken()
   }, [])
@@ -97,20 +104,24 @@ export default function App() {
 
 
   //verify user logged in and show the dashboard or login page respective to the scenario
-  if (loginState.userToken) {
-    return (
-      <AuthContext.Provider value={authContext}>
-        <Dashboard></Dashboard>
-      </AuthContext.Provider>
-
-    )
+  if (isLoading) {
+    return (<ActivityIndicator size='large' style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }} />)
   } else {
-    return (
-      <AuthContext.Provider value={authContext}>
-        <Auth></Auth>
-      </AuthContext.Provider>
-    )
+    if (loginState.userToken) {
+      return (
+        <AuthContext.Provider value={authContext}>
+          <Dashboard></Dashboard>
+        </AuthContext.Provider>
+
+      )
+    } else {
+      return (
+        <AuthContext.Provider value={authContext}>
+          <Auth></Auth>
+        </AuthContext.Provider>
+      )
+    }
+
+
   }
-
-
 }
