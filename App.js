@@ -110,7 +110,7 @@ export default function App() {
     if (loginState.userToken) {
       return (
         <AuthContext.Provider value={authContext}>
-          <Dashboard></Dashboard>
+          <Dashboard userToken={loginState.userToken}></Dashboard>
         </AuthContext.Provider>
 
       )
