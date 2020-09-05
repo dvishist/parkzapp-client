@@ -4,10 +4,11 @@ import MapView from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 
 
-export default function HomeScreen() {
+export default function HomeScreen(props) {
+    //by default set location to Melbourne coordinates
     const [locationState, setState] = React.useState({
-        latitude: -33.8688,
-        longitude: 151.2093,
+        latitude: -37.8136,
+        longitude: 144.9631,
         latitudeDelta: 0.03,
         longitudeDelta: 0.03
 
@@ -18,7 +19,7 @@ export default function HomeScreen() {
             try {
                 const { status } = await Permissions.getAsync(Permissions.LOCATION)
                 if (status !== 'granted') {
-                    const response = await Permissions.askAsync(Permissions.LOCATION)
+                    await Permissions.askAsync(Permissions.LOCATION)
                 }
                 navigator.geolocation.getCurrentPosition(
                     ({ coords: { latitude, longitude } }) => {
@@ -38,12 +39,6 @@ export default function HomeScreen() {
         <MapView
             showsUserLocation
             style={styles.map}
-            // initialRegion={{
-            //     latitude: locationState.latitude,
-            //     longitude: locationState.longitude,
-            //     latitudeDelta: locationState.latitudeDelta,
-            //     longitudeDelta: locationState.longitudeDelta
-            // }}
             region={{
                 latitude: locationState.latitude,
                 longitude: locationState.longitude,

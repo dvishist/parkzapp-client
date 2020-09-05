@@ -5,31 +5,13 @@ import API_URL from '../../components/apiurl'
 import AsyncStorage from '@react-native-community/async-storage'
 import { AuthContext } from '../../components/context'
 
-export default function OptionScreen() {
-    const [userProfile, setUserProfile] = React.useState(null)
-    axios.defaults.baseURL = API_URL;
-
+export default function OptionScreen(props) {
+    userProfile = props.userProfile
     const { signOut } = React.useContext(AuthContext)
 
     const signOutHandle = () => {
         signOut()
     }
-
-    useEffect(() => {
-        async function setup() {
-            try {
-                const userToken = await AsyncStorage.getItem('userToken')
-                axios.defaults.headers.common['Authorization'] = userToken
-                const { data } = await axios.get('users/self')
-                setUserProfile({ ...data })
-            } catch (err) {
-                console.log(err)
-            }
-        }
-        setup()
-    }, [])
-
-
 
     return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
