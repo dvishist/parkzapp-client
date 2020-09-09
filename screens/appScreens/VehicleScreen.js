@@ -8,7 +8,11 @@ export default function VehicleScreen(props) {
     const [vehicles, setVehicles] = React.useState(null)
     const [selected, setSelected] = React.useState(0)
 
-    const [formValues, setFormValues] = React.useState(null)
+    const [formValues, setFormValues] = React.useState({
+        manufacturer: "",
+        model: "",
+        idNumber: ""
+    })
 
     axios.defaults.baseURL = API_URL
     axios.defaults.headers.common['Authorization'] = props.userToken
@@ -27,30 +31,36 @@ export default function VehicleScreen(props) {
         })
     }
 
-    //register button handler
-    const registerHandler = async () => {
-        const { manufacturer, model, idNumber } = formValues
+    //load vehicles from server
+    const loadVehicles = async () => {
         try {
-            const vehicle = await axios.post('/vehicles', { manufacturer, model, idNumber })
+            const { data } = await axios.get('/users/vehicles')
+            const vehicleList = data.map(item => {
+                return { item, key: data.indexOf(item).toString() }
+            })
+            setVehicles(vehicleList)
+
         } catch (err) {
             console.log(err)
         }
     }
 
-    //load vehicles from server
-    useEffect(() => {
-        async function setup() {
-            try {
-                const { data } = await axios.get('users/vehicles')
-                const vehicleList = data.map(item => {
-                    return { item, key: data.indexOf(item).toString() }
-                })
-                setVehicles(vehicleList)
-            } catch (err) {
-                console.log(err)
-            }
+    //register button handler
+    const registerHandler = async () => {
+        const { manufacturer, model, idNumber } = formValues
+        try {
+            const vehicle = await axios.post('vehicles', { manufacturer, model, idNumber })
+            loadVehicles()
+        } catch (err) {
+            console.log(err)
         }
-        setup()
+    }
+
+
+
+
+    useEffect(() => {
+        loadVehicles()
     }, [])
 
 
@@ -62,13 +72,18 @@ export default function VehicleScreen(props) {
                 style={{ marginVertical: 10 }}
                 data={vehicles}
                 renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => { setSelectedVehicle(item.key) }}>
-                        <View style={{ ...styles.vehicleItem, backgroundColor: item.key == selected ? '#34eb92' : 'darkgray' }}>
-                            <Text style={styles.headingText}>{`${item.item.manufacturer} ${item.item.model}`.toUpperCase()}</Text>
-                            <Text >{new String(item.item.idNumber)}</Text>
-                            <Text >{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
-                        </View>
-                    </TouchableOpacity>
+                    <View style={styles.vehicleContainer}>
+                        <TouchableOpacity delayPressIn={5} onPress={() => { setSelectedVehicle(item.key) }}>
+                            <View style={{ ...styles.vehicleItem, backgroundColor: item.key == selected ? '#34eb92' : 'darkgray' }}>
+                                <Text style={styles.headingText}>{`${item.item.manufacturer} ${item.item.model}`.toUpperCase()}</Text>
+                                <Text>{`Number: ${new String(item.item.idNumber)}`}</Text>
+                                <Text>{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
+                            </View>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteVehicleButton}>
+                            <Text style={{ color: 'white' }}>Delete</Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             />
             <View style={styles.addVehicle}>
@@ -78,7 +93,7 @@ export default function VehicleScreen(props) {
                 <Text>Model</Text>
                 <TextInput style={styles.textInput} placeholder={'Skyline'} onChangeText={value => { formInputChange('model', value) }}></TextInput>
                 <Text>Identification Number</Text>
-                <TextInput style={styles.textInput} placeholder={'A1B2C3'} onChangeText={value => { formInputChange('inNumber', value) }}></TextInput>
+                <TextInput style={styles.textInput} placeholder={'A1B2C3'} onChangeText={value => { formInputChange('idNumber', value) }}></TextInput>
                 <Button title={"REGISTER"} onPress={registerHandler} />
             </View>
         </View>
@@ -92,10 +107,9 @@ const styles = StyleSheet.create({
         flex: 1
     },
     vehicleItem: {
-        borderColor: 'black',
         padding: 8,
         marginVertical: 5,
-        borderRadius: 2
+        width: 250
     },
     headingText: {
         fontWeight: 'bold',
@@ -118,5 +132,18 @@ const styles = StyleSheet.create({
         height: 30,
         marginVertical: 5,
         paddingHorizontal: 5
+    },
+    vehicleContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        flex: 1,
+        justifyContent: 'center'
+    },
+    deleteVehicleButton: {
+        backgroundColor: 'red',
+        padding: 8,
+        marginVertical: 5,
+        height: '89.5%',
+        justifyContent: 'center'
     }
 })
