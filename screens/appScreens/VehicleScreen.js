@@ -46,7 +46,7 @@ export default function VehicleScreen(props) {
     }
 
     //register button handler
-    const registerHandler = async () => {
+    const registerVehicle = async () => {
         const { manufacturer, model, idNumber } = formValues
         try {
             const vehicle = await axios.post('vehicles', { manufacturer, model, idNumber })
@@ -56,6 +56,16 @@ export default function VehicleScreen(props) {
         }
     }
 
+    //delete Vehicle
+    const deleteVehicle = async (id) => {
+        try {
+            await axios.delete(`/vehicles/${id}`)
+            loadVehicles()
+        } catch (err) {
+            console.lof(err)
+        }
+
+    }
 
 
 
@@ -80,7 +90,7 @@ export default function VehicleScreen(props) {
                                 <Text>{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
                             </View>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.deleteVehicleButton}>
+                        <TouchableOpacity onPress={() => { deleteVehicle(item.item._id) }} style={styles.deleteVehicleButton}>
                             <Text style={{ color: 'white' }}>Delete</Text>
                         </TouchableOpacity>
                     </View>
@@ -94,7 +104,7 @@ export default function VehicleScreen(props) {
                 <TextInput style={styles.textInput} placeholder={'Skyline'} onChangeText={value => { formInputChange('model', value) }}></TextInput>
                 <Text>Identification Number</Text>
                 <TextInput style={styles.textInput} placeholder={'A1B2C3'} onChangeText={value => { formInputChange('idNumber', value) }}></TextInput>
-                <Button title={"REGISTER"} onPress={registerHandler} />
+                <Button title={"REGISTER"} onPress={registerVehicle} />
             </View>
         </View>
     )

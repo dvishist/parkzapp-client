@@ -45,7 +45,7 @@ export default function Dashboard(props) {
                             let color
                             switch (route.name) {
                                 case 'Home':
-                                    iconName = 'ios-search'
+                                    iconName = 'md-map'
                                     color = focused ? 'white' : 'gray'
                                     break
                                 case 'History':
