@@ -6,7 +6,7 @@ import { TextInput } from 'react-native-gesture-handler'
 
 export default function VehicleScreen(props) {
     const [vehicles, setVehicles] = React.useState(null)
-    const [selected, setSelected] = React.useState(0)
+    const [selected, setSelected] = React.useState(props.userProfile.parkState.vehicle)
 
     const [formValues, setFormValues] = React.useState({
         manufacturer: "",
@@ -17,11 +17,6 @@ export default function VehicleScreen(props) {
     axios.defaults.baseURL = API_URL
     axios.defaults.headers.common['Authorization'] = props.userToken
 
-
-    //set the clicked vehicle to selected
-    const setSelectedVehicle = key => {
-        setSelected(key)
-    }
 
     //update state on form Input change
     const formInputChange = (field, value) => {
@@ -39,7 +34,16 @@ export default function VehicleScreen(props) {
                 return { item, key: data.indexOf(item).toString() }
             })
             setVehicles(vehicleList)
+        } catch (err) {
+            console.log(err)
+        }
+    }
 
+    //set selected vehicle on Parkstate
+    const setSelectedVehicle = async (id) => {
+        setSelected(id)
+        try {
+            await axios.post(`users/vehicle/${id}`)
         } catch (err) {
             console.log(err)
         }
@@ -83,8 +87,8 @@ export default function VehicleScreen(props) {
                 data={vehicles}
                 renderItem={({ item }) => (
                     <View style={styles.vehicleContainer}>
-                        <TouchableOpacity delayPressIn={5} onPress={() => { setSelectedVehicle(item.key) }}>
-                            <View style={{ ...styles.vehicleItem, backgroundColor: item.key == selected ? '#34eb92' : 'darkgray' }}>
+                        <TouchableOpacity delayPressIn={5} onPress={() => { setSelectedVehicle(item.item._id) }}>
+                            <View style={{ ...styles.vehicleItem, backgroundColor: item.item._id == selected ? '#34eb92' : 'darkgray' }}>
                                 <Text style={styles.headingText}>{`${item.item.manufacturer} ${item.item.model}`.toUpperCase()}</Text>
                                 <Text>{`Number: ${new String(item.item.idNumber)}`}</Text>
                                 <Text>{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
