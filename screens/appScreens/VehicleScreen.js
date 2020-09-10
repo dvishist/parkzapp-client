@@ -82,6 +82,7 @@ export default function VehicleScreen(props) {
     return (
         <View style={styles.container}>
             <Text style={{ ...styles.headingText, color: 'darkslategray', alignSelf: 'center' }}>REGISTERED VEHICLES</Text>
+            <Text style={{ alignSelf: 'center' }}>Please select the vehicle in use</Text>
             <FlatList
                 style={{ marginVertical: 10 }}
                 data={vehicles}
