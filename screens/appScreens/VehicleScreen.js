@@ -2,12 +2,13 @@ import React, { useEffect } from 'react'
 import { Text, View, StyleSheet, FlatList, Modal, TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 import axios from 'axios'
 import API_URL from '../../components/apiurl'
-import { TextInput } from 'react-native-gesture-handler'
+import { TextInput, ScrollView } from 'react-native-gesture-handler'
+
 
 export default function VehicleScreen(props) {
     const [vehicles, setVehicles] = React.useState(null)
     const [selected, setSelected] = React.useState(props.userProfile.parkState.vehicle)
-    const [modalActive, setModalActive] = React.useState(true)
+    const [modalActive, setModalActive] = React.useState(false)
 
     const [formValues, setFormValues] = React.useState({
         manufacturer: "",
@@ -52,25 +53,33 @@ export default function VehicleScreen(props) {
 
     //register button handler
     const registerVehicle = async () => {
-        setVehicles([
-            ...vehicles,
-            {
-                item: formValues,
-                key: vehicles.length.toString()
+        //update on client
+        if (formValues.idNumber !== "" && formValues.model !== "" && formValues.manufacturer !== "") {
+            setVehicles([
+                ...vehicles,
+                {
+                    item: formValues,
+                    key: vehicles.length.toString()
+                }
+            ])
+
+            //update on server
+            const { manufacturer, model, idNumber } = formValues
+            try {
+                await axios.post('vehicles', { manufacturer, model, idNumber })
+                loadVehicles()
+            } catch (err) {
+                console.log(err)
             }
-        ])
-        const { manufacturer, model, idNumber } = formValues
-        try {
-            const vehicle = await axios.post('vehicles', { manufacturer, model, idNumber })
-            loadVehicles()
-        } catch (err) {
-            console.log(err)
         }
     }
 
     //delete Vehicle
     const deleteVehicle = async (id) => {
+        //update on client
         setVehicles(vehicles.filter(item => item.item._id !== id))
+
+        //update on server
         try {
             await axios.delete(`/vehicles/${id}`)
             loadVehicles()
@@ -88,45 +97,51 @@ export default function VehicleScreen(props) {
 
 
 
-    return (
-        <View
-            style={styles.container}
-            blurRadius={20}
-        >
-            <Text style={{ ...styles.headingText, color: 'darkslategray', alignSelf: 'center' }}>REGISTERED VEHICLES</Text>
-            <Text style={{ alignSelf: 'center' }}>Please select the vehicle in use</Text>
-            <FlatList
-                style={{ marginVertical: 10 }}
-                data={vehicles}
-                renderItem={({ item }) => (
-                    <View style={styles.vehicleContainer}>
-                        <TouchableOpacity delayPressIn={5} onPress={() => { setSelectedVehicle(item.item._id) }}>
-                            <View style={{ ...styles.vehicleItem, backgroundColor: item.item._id == selected ? '#34eb92' : 'darkgray' }}>
-                                <Text style={styles.headingText}>{`${item.item.manufacturer} ${item.item.model}`.toUpperCase()}</Text>
-                                <Text>{`Number: ${new String(item.item.idNumber)}`}</Text>
-                                <Text>{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
-                            </View>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { deleteVehicle(item.item._id) }} style={styles.deleteVehicleButton}>
-                            <Text style={{ color: 'white' }}>Delete</Text>
-                        </TouchableOpacity>
+    if (!modalActive) {
+        return (
+            <View
+                style={styles.container}
+                blurRadius={20}
+            >
+                <Text style={{ ...styles.headingText, color: 'darkslategray', alignSelf: 'center' }}>REGISTERED VEHICLES</Text>
+                <Text style={{ alignSelf: 'center' }}>Please select the vehicle in use</Text>
+                <FlatList
+                    style={{ marginVertical: 10 }}
+                    data={vehicles}
+                    renderItem={({ item }) => (
+                        <View style={styles.vehicleContainer}>
+                            <TouchableOpacity delayPressIn={5} onPress={() => { setSelectedVehicle(item.item._id) }}>
+                                <View style={{ ...styles.vehicleItem, backgroundColor: item.item._id == selected ? '#758bfd' : 'darkgray' }}>
+                                    <Text style={styles.headingText}>{`${item.item.manufacturer} ${item.item.model}`.toUpperCase()}</Text>
+                                    <Text>{`Number: ${new String(item.item.idNumber.toUpperCase())}`}</Text>
+                                    <Text>{`Registered on: ${new Date(item.item.createdAt).toDateString()}`}</Text>
+                                </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => { deleteVehicle(item.item._id) }} style={styles.deleteVehicleButton}>
+                                <Text style={{ color: 'white' }}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                />
+                <TouchableOpacity style={styles.addButton} onPress={() => { setModalActive(true) }}>
+                    <View>
+                        <Text style={{ fontSize: 35, color: 'white' }}>+</Text>
                     </View>
-                )}
-            />
-            <TouchableOpacity style={styles.addButton} onPress={() => { setModalActive(true) }}>
-                <View>
-                    <Text style={{ fontSize: 35, color: 'white' }}>+</Text>
-                </View>
-            </TouchableOpacity>
+                </TouchableOpacity>
+
+            </View >
+        )
+    } else {
+        return (
             <Modal
+                backgroundColor="black"
                 visible={modalActive}
                 transparent={true}
                 style={styles.registerModal}
                 animationType="slide"
             >
-                <KeyboardAvoidingView
+                <View
                     style={styles.addVehicle}
-                    behavior="position"
                 >
                     <TouchableOpacity style={styles.crossButton} onPress={() => {
                         setModalActive(false)
@@ -143,14 +158,14 @@ export default function VehicleScreen(props) {
                     </TouchableOpacity>
 
                     <Text style={styles.headingModal}>REGISTER NEW VEHICLE</Text>
-                    <Text style={{ color: 'white', marginTop: 20 }}>Manufacturer</Text>
+                    <Text style={{ color: 'white' }}>Manufacturer</Text>
                     <TextInput style={styles.textInput} placeholder={'Nissan'} onChangeText={value => { formInputChange('manufacturer', value) }}></TextInput>
                     <Text style={{ color: 'white' }}>Model</Text>
                     <TextInput style={styles.textInput} placeholder={'Skyline'} onChangeText={value => { formInputChange('model', value) }}></TextInput>
                     <Text style={{ color: 'white' }}>Identification Number</Text>
                     <TextInput style={styles.textInput} placeholder={'A1B2C3'} onChangeText={value => { formInputChange('idNumber', value) }}></TextInput>
                     <TouchableOpacity
-                        style={{ alignItems: 'center', marginTop: 25 }}
+                        style={{ alignItems: 'center', marginTop: 17 }}
                         onPress={() => {
                             registerVehicle()
                             setModalActive(false)
@@ -161,28 +176,38 @@ export default function VehicleScreen(props) {
                             })
                         }}
                     >
-                        <Text style={{ fontSize: 20, backgroundColor: '#b3dee2', width: '50%', textAlign: 'center', padding: 8 }}>
+                        <Text style={{ fontSize: 20, borderRadius: 25, backgroundColor: '#00BFA5', width: '50%', textAlign: 'center', padding: 5 }}>
                             REGISTER
                         </Text>
                     </TouchableOpacity>
-                </KeyboardAvoidingView>
+                </View>
             </Modal>
-
-        </View >
-    )
+        )
+    }
 }
 
 
 const styles = StyleSheet.create({
     container: {
-        padding: 15,
+        paddingTop: 15,
         justifyContent: 'center',
         alignItems: 'center'
     },
     vehicleItem: {
         padding: 8,
         marginVertical: 5,
-        width: 250
+        width: 270,
+        borderBottomStartRadius: 18,
+        borderTopStartRadius: 18
+    },
+    deleteVehicleButton: {
+        backgroundColor: 'red',
+        padding: 8,
+        marginVertical: 5,
+        height: '89.1%',
+        justifyContent: 'center',
+        borderTopEndRadius: 18,
+        borderBottomEndRadius: 18
     },
     headingText: {
         fontWeight: 'bold',
@@ -197,17 +222,17 @@ const styles = StyleSheet.create({
     },
     addVehicle: {
         backgroundColor: '#0c44ac',
-        height: 400,
-        padding: 20,
-        margin: 10,
-        marginTop: 130,
+        paddingHorizontal: 20,
+        paddingVertical: 8,
+        margin: 18,
         borderRadius: 35
     },
     addButton: {
         backgroundColor: '#f20089',
+        paddingBottom: 5,
         height: 70,
         width: 70,
-        marginVertical: 15,
+        marginVertical: 10,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 50
@@ -222,10 +247,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 50
-    },
-    registerModal: {
-        justifyContent: 'center',
-        margin: 20,
     },
     text: {
         fontSize: 15,
@@ -244,13 +265,6 @@ const styles = StyleSheet.create({
         width: '100%',
         flexDirection: 'row',
         flex: 1,
-        justifyContent: 'center'
-    },
-    deleteVehicleButton: {
-        backgroundColor: 'red',
-        padding: 8,
-        marginVertical: 5,
-        height: '89.1%',
         justifyContent: 'center'
     }
 
