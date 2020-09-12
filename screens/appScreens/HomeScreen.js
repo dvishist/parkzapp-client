@@ -39,6 +39,7 @@ export default function HomeScreen(props) {
         <MapView
             showsUserLocation
             style={styles.map}
+            provider="google"
             region={{
                 latitude: locationState.latitude,
                 longitude: locationState.longitude,
