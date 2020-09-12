@@ -101,7 +101,7 @@ export default function VehicleScreen(props) {
                     </View>
                 )}
             />
-            <View style={styles.addVehicle}>
+            {/* <View style={styles.addVehicle}>
                 <Text style={styles.headingText}>REGISTER NEW VEHICLE</Text>
                 <Text>Manufacturer</Text>
                 <TextInput style={styles.textInput} placeholder={'Nissan'} onChangeText={value => { formInputChange('manufacturer', value) }}></TextInput>
@@ -110,7 +110,7 @@ export default function VehicleScreen(props) {
                 <Text>Identification Number</Text>
                 <TextInput style={styles.textInput} placeholder={'A1B2C3'} onChangeText={value => { formInputChange('idNumber', value) }}></TextInput>
                 <Button title={"REGISTER"} onPress={registerVehicle} />
-            </View>
+            </View> */}
         </View>
     )
 }
@@ -124,7 +124,9 @@ const styles = StyleSheet.create({
     vehicleItem: {
         padding: 8,
         marginVertical: 5,
-        width: 250
+        width: 270,
+        borderTopStartRadius: 12,
+        borderBottomStartRadius: 12
     },
     headingText: {
         fontWeight: 'bold',
@@ -158,7 +160,9 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         padding: 8,
         marginVertical: 5,
-        height: '89.5%',
-        justifyContent: 'center'
+        height: '89%',
+        justifyContent: 'center',
+        borderTopEndRadius: 12,
+        borderBottomEndRadius: 12
     }
 })

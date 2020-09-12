@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
-import { Text, View, Button, Image, StyleSheet } from 'react-native'
+import { Text, View, Button, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import axios from 'axios'
 import API_URL from '../../components/apiurl'
 import AsyncStorage from '@react-native-community/async-storage'
 import { AuthContext } from '../../components/context'
-import { TouchableOpacity } from 'react-native-gesture-handler'
+import { LinearGradient } from 'expo-linear-gradient'
 
 export default function OptionScreen(props) {
     userProfile = props.userProfile
@@ -12,35 +12,37 @@ export default function OptionScreen(props) {
 
     return (
         <>
-            <View style={styles.container}>
-                <View style={styles.profile}>
-                    <Image
-                        onLoad={() => null}
-                        fadeDuration={0}
-                        style={styles.image}
-                        defaultource={require('../../assets/user.jpg')}
-                        source={{ uri: `https://park-zapp.herokuapp.com/users/${userProfile._id}/avatar` }}
-                    >
-                    </Image>
-                    <Text style={styles.userName}>{userProfile.name.toUpperCase()}</Text>
+            <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
+                <View style={styles.container}>
+                    <View style={styles.profile}>
+                        <Image
+                            onLoad={() => null}
+                            fadeDuration={0}
+                            style={styles.image}
+                            defaultource={require('../../assets/user.jpg')}
+                            source={{ uri: `https://park-zapp.herokuapp.com/users/${userProfile._id}/avatar` }}
+                        >
+                        </Image>
+                        <Text style={styles.userName}>{userProfile.name.toUpperCase()}</Text>
+                        <Text style={styles.userEmail}>{userProfile.email}</Text>
+                    </View>
+                    <TouchableOpacity style={styles.options}>
+                        <Text style={styles.optionsText}>Edit Profile</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.options}>
+                        <Text style={styles.optionsText}>Change Profile Picture</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.options}>
+                        <Text style={styles.optionsText}>Change Payment Method</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.options}>
+                        <Text style={styles.optionsText}>Change Password</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.options} onPress={() => signOut()}>
+                        <Text style={styles.optionsText}>LOG OUT</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.options}>
-                    <Text style={styles.optionsText}>Edit Profile</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.options}>
-                    <Text style={styles.optionsText}>Change Avatar</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.options}>
-                    <Text style={styles.optionsText}>Change Payment Method</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.options}>
-                    <Text style={styles.optionsText}>Change Password</Text>
-                </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.logoutButton} onPress={() => signOut()}>
-                <Text style={{ color: 'white', fontWeight: 'bold' }}>LOG OUT</Text>
-            </TouchableOpacity>
+            </LinearGradient>
         </>
 
     )
@@ -60,7 +62,6 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'beige'
     },
     profile: {
         marginBottom: 60
@@ -68,17 +69,22 @@ const styles = StyleSheet.create({
     userName: {
         alignSelf: 'center',
         fontWeight: 'bold',
-        fontSize: 20
+        marginTop: 8,
+        fontSize: 25,
+        color: 'white'
+    },
+    userEmail: {
+        alignSelf: 'center',
+        color: 'white'
     },
     options: {
         backgroundColor: 'white',
-        width: 350,
+        width: 330,
         alignItems: 'center',
         justifyContent: 'center',
         height: 40,
-        borderWidth: 1,
-        marginVertical: 2,
-        borderRadius: 12
+        marginVertical: 5,
+        borderRadius: 20
     },
     optionsText: {
         fontSize: 17,
