@@ -15,7 +15,7 @@ export default function App() {
         <NavigationContainer>
             <Tabs.Navigator
                 activeColor='teal'
-                barStyle={{ backgroundColor: 'beige' }}
+                barStyle={{ backgroundColor: 'white' }}
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused }) => {
                         let iconName

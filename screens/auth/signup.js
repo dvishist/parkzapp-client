@@ -87,7 +87,7 @@ export default function Signup() {
     return (
         <>
             <ScrollView>
-                <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
+                <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
                     <View style={styles.loginView}>
                         <View>
                             <Text style={styles.titleText1}>WELCOME TO</Text>

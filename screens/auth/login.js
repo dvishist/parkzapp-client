@@ -64,7 +64,7 @@ export default function Login({ navigation }) {
 
     return (
         <>
-            <LinearGradient colors={['#5cdb95', '#05386b']} style={styles.container}>
+            <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
                 <Image
                     source={require('../../assets/logo.png')}
                     style={styles.logo}

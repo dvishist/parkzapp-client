@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { View, Text, Button, Image, StatusBar } from 'react-native'
+import { View, Text, Button, Image, StatusBar, ActivityIndicator } from 'react-native'
 
 import { NavigationContainer } from '@react-navigation/native'
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs'
@@ -17,6 +17,7 @@ export default function Dashboard(props) {
     const Tabs = createMaterialBottomTabNavigator()
     axios.defaults.baseURL = API_URL;
     const [userProfile, setUserProfile] = React.useState(null)
+    const [loading, setLoading] = React.useState(true)
 
     useEffect(() => {
         async function setup() {
@@ -24,6 +25,7 @@ export default function Dashboard(props) {
                 axios.defaults.headers.common['Authorization'] = props.userToken
                 const { data } = await axios.get('users/self')
                 setUserProfile({ ...data })
+                setLoading(false)
             } catch (err) {
                 console.log(err)
             }
@@ -31,49 +33,52 @@ export default function Dashboard(props) {
         setup()
     }, [])
 
-    return (
-        <>
-            <StatusBar backgroundColor='#34eb92'></StatusBar>
-            <NavigationContainer>
-                <Tabs.Navigator
-                    activeColor='white'
-                    inactiveColor='gray'
-                    barStyle={{ backgroundColor: '#34eb92' }}
-                    screenOptions={({ route }) => ({
-                        tabBarIcon: ({ focused }) => {
-                            let iconName
-                            let color
-                            switch (route.name) {
-                                case 'Home':
-                                    iconName = 'md-map'
-                                    color = focused ? 'white' : 'gray'
-                                    break
-                                case 'History':
-                                    iconName = 'ios-refresh'
-                                    color = focused ? 'white' : 'gray'
-                                    break
-                                case 'Vehicles':
-                                    iconName = 'ios-car'
-                                    color = focused ? 'white' : 'gray'
-                                    break
-                                case 'Options':
-                                    iconName = 'ios-menu'
-                                    color = focused ? 'white' : 'gray'
-                                    break
 
+    return loading ? (<ActivityIndicator size='large' style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }} />)
+        :
+        (
+            <>
+                <StatusBar backgroundColor='#ff1654'></StatusBar>
+
+                <NavigationContainer>
+                    <Tabs.Navigator
+                        activeColor='white'
+                        inactiveColor='gray'
+                        barStyle={{ backgroundColor: '#f20089' }}
+                        screenOptions={({ route }) => ({
+                            tabBarIcon: ({ focused }) => {
+                                let iconName
+                                let color
+                                switch (route.name) {
+                                    case 'Home':
+                                        iconName = 'md-map'
+                                        color = focused ? 'white' : '#4ecdc4'
+                                        break
+                                    case 'History':
+                                        iconName = 'ios-refresh'
+                                        color = focused ? 'white' : '#4ecdc4'
+                                        break
+                                    case 'Vehicles':
+                                        iconName = 'ios-car'
+                                        color = focused ? 'white' : '#4ecdc4'
+                                        break
+                                    case 'Options':
+                                        iconName = 'ios-menu'
+                                        color = focused ? 'white' : '#4ecdc4'
+                                        break
+
+                                }
+
+                                return <Ionicons name={iconName} size={20} color={color} />
                             }
-
-                            return <Ionicons name={iconName} size={20} color={color} />
-                        }
-                    })}
-                >
-                    {/* <Tabs.Screen name='Home'>{() => <HomeScreen userProfile={userProfile} />} </Tabs.Screen> */}
-                    <Tabs.Screen name='Home' children={() => <HomeScreen userProfile={userProfile} userToken={props.userToken} />} />
-                    <Tabs.Screen name='Vehicles' children={() => <VehicleScreen userProfile={userProfile} userToken={props.userToken} />} />
-                    <Tabs.Screen name='History' children={() => <HistoryScreen userProfile={userProfile} userToken={props.userToken} />} />
-                    <Tabs.Screen name='Options' children={() => <OptionScreen userProfile={userProfile} userToken={props.userToken} />} />
-                </Tabs.Navigator>
-            </NavigationContainer>
-        </>
-    )
+                        })}
+                    >
+                        <Tabs.Screen name='Home' children={() => <HomeScreen userProfile={userProfile} userToken={props.userToken} />} />
+                        <Tabs.Screen name='Vehicles' children={() => <VehicleScreen userProfile={userProfile} userToken={props.userToken} />} />
+                        <Tabs.Screen name='History' children={() => <HistoryScreen userProfile={userProfile} userToken={props.userToken} />} />
+                        <Tabs.Screen name='Options' children={() => <OptionScreen userProfile={userProfile} userToken={props.userToken} />} />
+                    </Tabs.Navigator>
+                </NavigationContainer>
+            </>
+        )
 }
