@@ -87,7 +87,7 @@ export default function Signup() {
     return (
         <>
             <ScrollView>
-                <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
+                <LinearGradient colors={['#ef6698', '#492cac']} style={styles.container}>
                     <View style={styles.loginView}>
                         <View>
                             <Text style={styles.titleText1}>WELCOME TO</Text>
@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         width: '100%',
-        height: '100%',
-        paddingHorizontal: 10
+        height: 800,
+        paddingHorizontal: 20,
     },
     titleText1: {
         color: 'white',

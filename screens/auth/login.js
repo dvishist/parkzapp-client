@@ -64,7 +64,7 @@ export default function Login({ navigation }) {
 
     return (
         <>
-            <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
+            <LinearGradient colors={['#ef6698', '#492cac']} style={styles.container}>
                 <Image
                     source={require('../../assets/logo.png')}
                     style={styles.logo}
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
         padding: 10
     },
     logo: {
-        marginTop: 80,
+        marginTop: '30%',
         borderRadius: 20,
         height: 140,
         width: 140,

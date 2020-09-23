@@ -38,13 +38,13 @@ export default function Dashboard(props) {
         :
         (
             <>
-                <StatusBar backgroundColor='#ff1654'></StatusBar>
+                <StatusBar backgroundColor='#ef6698'></StatusBar>
 
                 <NavigationContainer>
                     <Tabs.Navigator
                         activeColor='white'
                         inactiveColor='gray'
-                        barStyle={{ backgroundColor: '#f20089' }}
+                        barStyle={{ backgroundColor: '#492cac' }}
                         screenOptions={({ route }) => ({
                             tabBarIcon: ({ focused }) => {
                                 let iconName

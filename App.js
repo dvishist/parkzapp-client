@@ -13,6 +13,7 @@ import { ActivityIndicator } from 'react-native';
 
 export default function App() {
   axios.defaults.baseURL = API_URL
+
   //setup starting state of the app
   const initialLoginState = {
     isLoading: false,
@@ -71,6 +72,8 @@ export default function App() {
     signOut: async () => {
       try {
         await AsyncStorage.removeItem('userToken')
+        axios.defaults.headers.common['Authorization'] = loginState.userToken
+        await axios.post('users/logout')
       } catch (e) {
         console.log(e)
       }

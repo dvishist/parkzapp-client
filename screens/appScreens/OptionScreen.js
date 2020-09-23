@@ -1,13 +1,23 @@
 import React, { useEffect } from 'react'
 import { Text, View, Button, Image, StyleSheet, TouchableOpacity } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
+import ImageResizer from 'react-native-image-resizer'
+
+import axios from 'axios'
+import API_URL from '../../components/apiurl'
 import { AuthContext } from '../../components/context'
 import { LinearGradient } from 'expo-linear-gradient'
 
 export default function OptionScreen(props) {
+    axios.defaults.baseURL = API_URL
+    axios.defaults.headers.common['Authorization'] = props.userToken
+
     userProfile = props.userProfile
     const { signOut } = React.useContext(AuthContext)
-    const [image, setImage] = React.useState({ uri: `https://park-zapp.herokuapp.com/users/${userProfile._id}/avatar` })
+
+    //the string parameter is to avoid image cache on android, which loads the same image everytime
+    const [image, setImage] = React.useState({ uri: `${API_URL}/users/${userProfile._id}/avatar?string=${Math.random().toString(36).substring(7)}` })
+
 
     //prompt image load from library
     const pickImage = async () => {
@@ -19,8 +29,22 @@ export default function OptionScreen(props) {
                 quality: 1,
             })
             if (!result.cancelled) {
-                //console.log(result.uri)
                 setImage({ uri: result.uri })
+                console.log(result.uri)
+                ImageResizer.createResizedImage(result.uri, 80, 80, 'PNG', 5, 0, null, true).then(async ({ uri }) => {
+                    const data = new FormData()
+                    data.append('avatar',
+                        {
+                            uri: uri,
+                            name: `uploadImage.jpg`,
+                            type: 'image/png'
+                        }
+                    )
+                    await axios.post('users/self/avatar', data)
+                }).catch(err => {
+                    console.log(err)
+                })
+
             }
         } catch (err) {
             console.log(err)
@@ -29,7 +53,7 @@ export default function OptionScreen(props) {
 
     return (
         <>
-            <LinearGradient colors={['#f20089', '#2d00f7']} style={styles.container}>
+            <LinearGradient colors={['#ef6698', '#492cac']} style={styles.container}>
                 <View style={styles.container}>
                     <View style={styles.profile}>
                         <Image
@@ -46,7 +70,7 @@ export default function OptionScreen(props) {
                         <Text style={styles.optionsText}>Edit Profile</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.options} onPress={pickImage}>
-                        <Text style={styles.optionsText}>Change Avatar</Text>
+                        <Text style={styles.optionsText}>Change Profile Picture</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.options}>
                         <Text style={styles.optionsText}>Change Payment Method</Text>
@@ -83,7 +107,8 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         borderColor: 'white',
         backgroundColor: 'gray',
-        borderRadius: 100
+        borderRadius: 100,
+        alignSelf: 'center'
     },
     container: {
         flex: 1,
