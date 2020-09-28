@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Text, View, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native'
+import { Text, View, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import mapStyle from '../../components/mapstyle'
@@ -86,6 +86,18 @@ export default function HomeScreen(props) {
                 scrollEventThrottle={1}
                 showsHorizontalScrollIndicator={false}
                 style={styles.parkingList}
+                pagingEnabled
+                snapToInterval={(Dimensions.get('window').width * 0.8) + 20}
+                snapToAlignment={'center'}
+                contentInset={{
+                    top: 0,
+                    left: (Dimensions.get('window').width * 0.1 - 10),
+                    bottom: 0,
+                    right: (Dimensions.get('window').width * 0.1 - 10)
+                }}
+                contentContainerStyle={{
+                    paddingHorizontal: Platform.OS === 'android' ? (Dimensions.get('window').width * 0.1 - 10) : 0
+                }}
             >
                 {parkingsNearby ?
                     parkingsNearby.map(parking => (
@@ -123,14 +135,16 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 15,
         marginHorizontal: 10,
-        padding: 10
+        padding: 10,
+        width: Dimensions.get('window').width * 0.8
     },
     selectButton: {
         backgroundColor: 'silver',
-        width: 70,
-        padding: 8,
+        padding: 5,
+        borderWidth: 0.5,
+        width: '100%',
         alignItems: 'center',
         alignSelf: 'center',
-        borderRadius: 20
+        borderRadius: 10
     }
 })
