@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { Text, View, StyleSheet, Image } from 'react-native'
-import MapView from 'react-native-maps'
+import { Text, View, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native'
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import mapStyle from '../../components/mapstyle'
 
@@ -34,7 +34,8 @@ export default function HomeScreen(props) {
                 async ({ coords: { latitude, longitude } }) => {
                     setLocationState({ ...locationState, latitude, longitude })
                     const { data } = await axios.post('/parkings/findNearby', { latitude, longitude })
-                    setParkingsNearby(data)
+                    const filtered = data.filter(parking => parking.parking.capacity > parking.parking.occupants)
+                    setParkingsNearby(filtered)
                 },
                 error => console.log(error)
             )
@@ -48,45 +49,63 @@ export default function HomeScreen(props) {
 
     useEffect(() => {
         getLocation()
-
     }, [])
 
     return (
-        <MapView
-            showsUserLocation
-            style={styles.map}
-            customMapStyle={mapStyle}
-            provider="google"
-            region={{
-                latitude: locationState.latitude,
-                longitude: locationState.longitude,
-                latitudeDelta: locationState.latitudeDelta,
-                longitudeDelta: locationState.longitudeDelta
-            }}
-        >
-            {
-                parkingsNearby ?
-                    parkingsNearby.map(parking => {
-                        return (
+        <>
+            <MapView
+                showsUserLocation
+                style={styles.map}
+                provider="google"
+                customMapStyle={mapStyle}
+                region={{
+                    latitude: locationState.latitude,
+                    longitude: locationState.longitude,
+                    latitudeDelta: locationState.latitudeDelta,
+                    longitudeDelta: locationState.longitudeDelta
+                }}
+            >
+                {
+                    parkingsNearby ?
+                        parkingsNearby.map(parking => (
                             <MapView.Marker
-                                key={parkingsNearby.indexOf(parking)}
+                                provide={PROVIDER_GOOGLE}
                                 coordinate={parking.parking.coordinates}
-                                title={parking.parking.name}
-                                description={`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city} `}
+                                key={parkingsNearby.indexOf(parking)}
+                                title={parking.parking.name.toUpperCase()}
+                                description={`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city}`}
                             >
-                                <Image source={require('../../assets/marker.png')}
-                                    style={{ height: 40, width: 40 }}
-                                >
-
-                                </Image>
 
                             </MapView.Marker>
-                        )
-                    })
+                        ))
+                        : null
+                }
+            </MapView>
+            <ScrollView
+                horizontal
+                scrollEventThrottle={1}
+                showsHorizontalScrollIndicator={false}
+                style={styles.parkingList}
+            >
+                {parkingsNearby ?
+                    parkingsNearby.map(parking => (
+                        <View
+                            key={parkingsNearby.indexOf(parking)}
+                            style={styles.parkingCardItem}
+                        >
+                            <Text style={{ color: '#6115d4', fontWeight: 'bold', fontSize: 18 }}>{parking.parking.name.toUpperCase()}</Text>
+                            <Text style={{ color: 'darkslategray' }}>{`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city}`}</Text>
+                            <Text>{`${(parking.distance / 1000).toFixed(2)}km   ${parking.parking.capacity - parking.parking.occupants}/${parking.parking.capacity} Available`}</Text>
+                            <Text style={{ color: 'magenta', fontSize: 20 }}>{`$${parking.parking.charge}/hr`}</Text>
+                            <TouchableOpacity style={styles.selectButton}>
+                                <Text style={{ fontWeight: 'bold' }}>SELECT</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))
                     : null
-            }
-
-        </MapView>
+                }
+            </ScrollView>
+        </>
 
     )
 }
@@ -95,5 +114,23 @@ export default function HomeScreen(props) {
 const styles = StyleSheet.create({
     map: {
         flex: 1
+    },
+    parkingList: {
+        position: 'absolute',
+        bottom: 30
+    },
+    parkingCardItem: {
+        backgroundColor: 'white',
+        borderRadius: 15,
+        marginHorizontal: 10,
+        padding: 10
+    },
+    selectButton: {
+        backgroundColor: 'silver',
+        width: 70,
+        padding: 8,
+        alignItems: 'center',
+        alignSelf: 'center',
+        borderRadius: 20
     }
 })
