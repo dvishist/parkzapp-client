@@ -1,8 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Text, View, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import mapStyle from '../../components/mapstyle'
+import API_KEY from '../../components/apiKey'
+import MapViewDirections from 'react-native-maps-directions';
+import * as geolib from 'geolib'
 
 import axios from 'axios'
 import API_URL from '../../components/apiurl'
@@ -28,6 +31,8 @@ export default function HomeScreen(props) {
         longitudeDelta: 0.03
 
     })
+
+    const map = useRef(null)
 
     const getLocation = async () => {
         try {
@@ -55,10 +60,39 @@ export default function HomeScreen(props) {
             state: 'driving',
         })
         setSelectedParking(parking)
+        setLocationState({
+            ...locationState,
+            latitudeDelta: 0.003,
+            longitudeDelta: 0.003
+        })
     }
 
+    const updateDistance = () => {
+        if (parkState.state === 'driving') {
+            navigator.geolocation.getCurrentPosition(
+                async ({ coords: { latitude, longitude } }) => {
+                    let distance = geolib.getDistance(
+                        {
+                            latitude,
+                            longitude
+                        },
+                        selectedParking.coordinates,
+                        1)
 
+                    //update distance on selected parking state
+                    setSelectedParking({
+                        ...selectedParking,
+                        distance
+                    })
 
+                    //if distance is less than 100m, consider arrived
+                    if (distance <= 100) {
+                        setParkState({ state: 'arrived' })
+                    }
+                }
+            )
+        }
+    }
 
     useEffect(() => {
         getLocation()
@@ -81,13 +115,15 @@ export default function HomeScreen(props) {
                     latitudeDelta: locationState.latitudeDelta,
                     longitudeDelta: locationState.longitudeDelta
                 }}
+                ref={map}
+                onUserLocationChange={parkState.state === 'driving' ? updateDistance : null}
             >
                 {
                     //parking lot markers
                     parkingsNearby && parkState.state === 'searching' ?
                         parkingsNearby.map(parking => (
                             <MapView.Marker
-                                provide={PROVIDER_GOOGLE}
+                                provider={PROVIDER_GOOGLE}
                                 coordinate={parking.parking.coordinates}
                                 key={parkingsNearby.indexOf(parking)}
                                 title={parking.parking.name.toUpperCase()}
@@ -95,6 +131,30 @@ export default function HomeScreen(props) {
                             >
                             </MapView.Marker>
                         ))
+                        : null
+                }
+
+                {
+                    //directions to selected parking lot
+                    parkState.state === 'driving' && selectedParking ?
+                        <MapViewDirections
+                            origin={{ latitude: locationState.latitude, longitude: locationState.longitude }}
+                            destination={selectedParking.coordinates}
+                            apikey={API_KEY}
+                            strokeWidth={8}
+                            strokeColor='hotpink'
+                            optimizeWaypoints={true}
+                        />
+                        : null
+                }
+
+                {
+                    parkState.state === 'driving' && selectedParking ?
+                        <MapView.Marker
+                            provider={PROVIDER_GOOGLE}
+                            coordinate={selectedParking.coordinates}
+                        >
+                        </MapView.Marker>
                         : null
                 }
             </MapView>
@@ -135,22 +195,25 @@ export default function HomeScreen(props) {
                     : null
                 }
             </ScrollView>
-
             {
                 //State : Driving to Parking
                 parkState.state === 'driving' ?
+
                     <View style={styles.drivingInfo}>
                         <Text>Driving To</Text>
                         <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
                         <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
                         <Text>Distance:{`${(selectedParking.distance / 1000).toFixed(2)}km`}</Text>
 
-                        <TouchableOpacity style={styles.cancelButton} onPress={() => { setParkState({ state: 'searching' }) }}>
+                        <TouchableOpacity style={styles.cancelButton} onPress={() => { setParkState({ state: 'searching' }); getLocation() }}>
                             <Text style={{ color: 'white' }}>CANCEL</Text>
                         </TouchableOpacity>
                     </View>
+
                     : null
             }
+
+
         </>
 
     )

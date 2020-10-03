@@ -142,7 +142,7 @@ export default [
         "elementType": "geometry",
         "stylers": [
             {
-                "color": "#c873f0"
+                "color": "#9ca5b3"
             }
         ]
     },
