@@ -8,7 +8,7 @@ import { AuthContext } from '../../components/context'
 import API_URL from '../../components/apiurl'
 
 export default function Login({ navigation }) {
-    axios.defaults.baseURL = API_URL;
+    axios.defaults.baseURL = API_URL
     const [loading, setLoading] = React.useState(false)
 
     //login state to verify user loggedin with correct credentials

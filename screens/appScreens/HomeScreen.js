@@ -11,6 +11,11 @@ import API_URL from '../../components/apiurl'
 export default function HomeScreen(props) {
 
     const [parkingsNearby, setParkingsNearby] = React.useState([])
+    const [parkState, setParkState] = React.useState({
+        state: 'searching',
+    })
+    const [selectedParking, setSelectedParking] = React.useState({})
+
 
     axios.defaults.baseURL = API_URL
     axios.defaults.headers.common['Authorization'] = props.userToken
@@ -24,7 +29,7 @@ export default function HomeScreen(props) {
 
     })
 
-    async function getLocation() {
+    const getLocation = async () => {
         try {
             const { status } = await Permissions.getAsync(Permissions.LOCATION)
             if (status !== 'granted') {
@@ -45,6 +50,14 @@ export default function HomeScreen(props) {
 
     }
 
+    const selectParking = parking => {
+        setParkState({
+            state: 'driving',
+        })
+        setSelectedParking(parking)
+    }
+
+
 
 
     useEffect(() => {
@@ -53,6 +66,10 @@ export default function HomeScreen(props) {
 
     return (
         <>
+            <Image
+                source={require('../../assets/header.png')}
+                style={styles.header}
+            />
             <MapView
                 showsUserLocation
                 style={styles.map}
@@ -66,7 +83,8 @@ export default function HomeScreen(props) {
                 }}
             >
                 {
-                    parkingsNearby ?
+                    //parking lot markers
+                    parkingsNearby && parkState.state === 'searching' ?
                         parkingsNearby.map(parking => (
                             <MapView.Marker
                                 provide={PROVIDER_GOOGLE}
@@ -75,12 +93,12 @@ export default function HomeScreen(props) {
                                 title={parking.parking.name.toUpperCase()}
                                 description={`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city}`}
                             >
-
                             </MapView.Marker>
                         ))
                         : null
                 }
             </MapView>
+
             <ScrollView
                 horizontal
                 scrollEventThrottle={1}
@@ -99,7 +117,7 @@ export default function HomeScreen(props) {
                     paddingHorizontal: Platform.OS === 'android' ? (Dimensions.get('window').width * 0.1 - 10) : 0
                 }}
             >
-                {parkingsNearby ?
+                {parkingsNearby && parkState.state === 'searching' ?
                     parkingsNearby.map(parking => (
                         <View
                             key={parkingsNearby.indexOf(parking)}
@@ -109,14 +127,30 @@ export default function HomeScreen(props) {
                             <Text style={{ color: 'darkslategray' }}>{`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city}`}</Text>
                             <Text>{`${(parking.distance / 1000).toFixed(2)}km   ${parking.parking.capacity - parking.parking.occupants}/${parking.parking.capacity} Available`}</Text>
                             <Text style={{ color: 'magenta', fontSize: 20 }}>{`$${parking.parking.charge}/hr`}</Text>
-                            <TouchableOpacity style={styles.selectButton}>
-                                <Text style={{ fontWeight: 'bold' }}>SELECT</Text>
+                            <TouchableOpacity style={styles.selectButton} onPress={() => { selectParking({ ...parking.parking, distance: parking.distance }) }}>
+                                <Text style={{ fontWeight: 'bold', color: '#ff196e' }}>SELECT</Text>
                             </TouchableOpacity>
                         </View>
                     ))
                     : null
                 }
             </ScrollView>
+
+            {
+                //State : Driving to Parking
+                parkState.state === 'driving' ?
+                    <View style={styles.drivingInfo}>
+                        <Text>Driving To</Text>
+                        <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
+                        <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
+                        <Text>Distance:{`${(selectedParking.distance / 1000).toFixed(2)}km`}</Text>
+
+                        <TouchableOpacity style={styles.cancelButton} onPress={() => { setParkState({ state: 'searching' }) }}>
+                            <Text style={{ color: 'white' }}>CANCEL</Text>
+                        </TouchableOpacity>
+                    </View>
+                    : null
+            }
         </>
 
     )
@@ -126,6 +160,15 @@ export default function HomeScreen(props) {
 const styles = StyleSheet.create({
     map: {
         flex: 1
+    },
+    header: {
+        borderRadius: 20,
+        position: 'absolute',
+        zIndex: 1,
+        resizeMode: 'contain',
+        width: 220,
+        alignSelf: 'center'
+
     },
     parkingList: {
         position: 'absolute',
@@ -139,12 +182,30 @@ const styles = StyleSheet.create({
         width: Dimensions.get('window').width * 0.8
     },
     selectButton: {
-        backgroundColor: 'silver',
+        backgroundColor: '#ebe6e8',
         padding: 5,
         borderWidth: 0.5,
+        borderColor: '#ff196e',
         width: '100%',
         alignItems: 'center',
         alignSelf: 'center',
         borderRadius: 10
+    },
+    drivingInfo: {
+        backgroundColor: 'white',
+        width: '90%',
+        height: '20%',
+        alignSelf: 'center',
+        position: 'absolute',
+        bottom: 30,
+        borderRadius: 15,
+        padding: 10,
+    },
+    cancelButton: {
+        backgroundColor: 'red',
+        borderRadius: 5,
+        width: '22%',
+        alignItems: 'center',
+        alignSelf: 'center'
     }
 })
