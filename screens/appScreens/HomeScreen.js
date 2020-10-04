@@ -226,15 +226,6 @@ const styles = StyleSheet.create({
     map: {
         flex: 1
     },
-    header: {
-        borderRadius: 20,
-        position: 'absolute',
-        zIndex: 1,
-        resizeMode: 'contain',
-        width: 220,
-        alignSelf: 'center'
-
-    },
     parkingList: {
         position: 'absolute',
         bottom: 30
