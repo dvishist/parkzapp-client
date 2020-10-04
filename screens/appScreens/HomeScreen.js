@@ -14,10 +14,9 @@ import API_URL from '../../components/apiurl'
 export default function HomeScreen(props) {
 
     const [parkingsNearby, setParkingsNearby] = React.useState([])
-    const [parkState, setParkState] = React.useState({
-        state: 'searching',
-    })
+    const [parkState, setParkState] = React.useState({ state: 'searching' })
     const [selectedParking, setSelectedParking] = React.useState({})
+    const [distanceToParking, setDistanceToParking] = React.useState(0)
 
 
     axios.defaults.baseURL = API_URL
@@ -55,11 +54,12 @@ export default function HomeScreen(props) {
 
     }
 
-    const selectParking = parking => {
+    const selectParking = (parking, distance) => {
         setParkState({
             state: 'driving',
         })
         setSelectedParking(parking)
+        setDistanceToParking(distance)
         setLocationState({
             ...locationState,
             latitudeDelta: 0.003,
@@ -80,12 +80,10 @@ export default function HomeScreen(props) {
                         1)
 
                     //update distance on selected parking state
-                    setSelectedParking({
-                        ...selectedParking,
-                        distance
-                    })
+                    setSelectedParking(selectedParking)
+                    setDistanceToParking(distance)
 
-                    //if distance is less than 100m, consider arrived
+                    //if distance is less than 10m, consider arrived
                     if (distance <= 100) {
                         setParkState({ state: 'arrived' })
                     }
@@ -187,7 +185,7 @@ export default function HomeScreen(props) {
                             <Text style={{ color: 'darkslategray' }}>{`${parking.parking.address.streetNumber} ${parking.parking.address.streetName}, ${parking.parking.address.city}`}</Text>
                             <Text>{`${(parking.distance / 1000).toFixed(2)}km   ${parking.parking.capacity - parking.parking.occupants}/${parking.parking.capacity} Available`}</Text>
                             <Text style={{ color: 'magenta', fontSize: 20 }}>{`$${parking.parking.charge}/hr`}</Text>
-                            <TouchableOpacity style={styles.selectButton} onPress={() => { selectParking({ ...parking.parking, distance: parking.distance }) }}>
+                            <TouchableOpacity style={styles.selectButton} onPress={() => { selectParking(parking.parking, parking.distance) }}>
                                 <Text style={{ fontWeight: 'bold', color: '#ff196e' }}>SELECT</Text>
                             </TouchableOpacity>
                         </View>
@@ -203,7 +201,11 @@ export default function HomeScreen(props) {
                         <Text>Driving To</Text>
                         <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
                         <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
-                        <Text>Distance:{`${(selectedParking.distance / 1000).toFixed(2)}km`}</Text>
+                        <Text>Distance:{
+                            distanceToParking > 1000 ?
+                                `${(distanceToParking / 1000).toFixed(2)}km`
+                                : `${distanceToParking}m`
+                        }</Text>
 
                         <TouchableOpacity style={styles.cancelButton} onPress={() => { setParkState({ state: 'searching' }); getLocation() }}>
                             <Text style={{ color: 'white' }}>CANCEL</Text>
