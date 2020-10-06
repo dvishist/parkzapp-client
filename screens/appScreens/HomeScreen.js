@@ -118,7 +118,9 @@ export default function HomeScreen(props) {
         }
     }
 
-    const promptPayment = () => {
+    const promptPayment = async () => {
+        console.log(liveSession._id)
+        await axios.post(`/parkingsessions/egress/${liveSession._id}`)
         setParkState({ state: 'searching' })
         getLocation()
 
