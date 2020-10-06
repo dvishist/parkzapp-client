@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from 'react'
-import { Text, View, StyleSheet, Image, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
+import React, { useEffect } from 'react'
+import { Text, View, StyleSheet, Alert, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
+import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import mapStyle from '../../components/mapstyle'
 import API_KEY from '../../components/apiKey'
@@ -17,7 +17,7 @@ export default function HomeScreen(props) {
     const [parkState, setParkState] = React.useState({ state: 'searching' })
     const [selectedParking, setSelectedParking] = React.useState({})
     const [distanceToParking, setDistanceToParking] = React.useState(0)
-
+    const [selectedVehicle, setSelectedVehicle] = React.useState(null)
 
     axios.defaults.baseURL = API_URL
     axios.defaults.headers.common['Authorization'] = props.userToken
@@ -30,8 +30,6 @@ export default function HomeScreen(props) {
         longitudeDelta: 0.03
 
     })
-
-    const map = useRef(null)
 
     const getLocation = async () => {
         try {
@@ -54,12 +52,19 @@ export default function HomeScreen(props) {
 
     }
 
-    const selectParking = (parking, distance) => {
+    const selectParking = async (parking, distance) => {
         setParkState({
             state: 'driving',
         })
         setSelectedParking(parking)
         setDistanceToParking(distance)
+        const user = await axios.get('users/self')
+        const vehicleId = user.data.parkState.vehicle
+        const vehicle = await axios.get(`/vehicles/${vehicleId}`)
+        const vehicleName = `${vehicle.data.manufacturer} ${vehicle.data.model} (${vehicle.data.idNumber})`
+        setSelectedVehicle(vehicleName)
+
+        //setSelectedVehicle(await axios.get('/users/self').data.parkState.vehicle)
         setLocationState({
             ...locationState,
             latitudeDelta: 0.003,
@@ -86,6 +91,11 @@ export default function HomeScreen(props) {
                     //if distance is less than 10m, consider arrived
                     if (distance <= 100) {
                         setParkState({ state: 'arrived' })
+                        Alert.alert('ARRIVED', 'Looks like you have arrived at ' + selectedParking.name.toUpperCase() + '! \n\nPress the PARK IN button to start your parking session', [
+                            { text: "PARK IN", onPress: () => setParkState({ state: 'parkedIn' }) }
+                        ],
+                            { cancelable: false }
+                        )
                     }
                 }
             )
@@ -100,6 +110,7 @@ export default function HomeScreen(props) {
         <>
             <MapView
                 showsUserLocation
+                followsUserLocation
                 style={styles.map}
                 provider="google"
                 customMapStyle={mapStyle}
@@ -109,7 +120,6 @@ export default function HomeScreen(props) {
                     latitudeDelta: locationState.latitudeDelta,
                     longitudeDelta: locationState.longitudeDelta
                 }}
-                ref={map}
                 onUserLocationChange={parkState.state === 'driving' ? updateDistance : null}
             >
                 {
@@ -145,7 +155,7 @@ export default function HomeScreen(props) {
                 {
                     parkState.state === 'driving' && selectedParking ?
                         <MapView.Marker
-                            provider={PROVIDER_GOOGLE}
+                            provider={PROVIDER_DEFAULT}
                             coordinate={selectedParking.coordinates}
                         >
                         </MapView.Marker>
@@ -194,7 +204,7 @@ export default function HomeScreen(props) {
                 parkState.state === 'driving' ?
 
                     <View style={styles.drivingInfo}>
-                        <Text>Driving To</Text>
+                        <Text>Driving {selectedVehicle} To</Text>
                         <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
                         <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
                         <Text>
@@ -212,9 +222,19 @@ export default function HomeScreen(props) {
 
                     : null
             }
-
+            {
+                //State : Parked In
+                parkState.state === 'parkedIn' ?
+                    <View style={styles.parkedInInfo}>
+                        <Text>{selectedVehicle} is Parked</Text>
+                    </View>
+                    : null
+            }
 
         </>
+
+
+
 
     )
 }
@@ -247,6 +267,16 @@ const styles = StyleSheet.create({
     },
     drivingInfo: {
         backgroundColor: 'white',
+        width: '90%',
+        height: '20%',
+        alignSelf: 'center',
+        position: 'absolute',
+        bottom: 30,
+        borderRadius: 15,
+        padding: 10,
+    },
+    parkedInInfo: {
+        backgroundColor: '#7844fc',
         width: '90%',
         height: '20%',
         alignSelf: 'center',
