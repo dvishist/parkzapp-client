@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react'
-import { Text, View, StyleSheet, Alert, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
+import { Text, View, StyleSheet, Alert, Image, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
 import mapStyle from '../../components/mapstyle'
 import API_KEY from '../../components/apiKey'
 import MapViewDirections from 'react-native-maps-directions';
 import * as geolib from 'geolib'
+import Moment from 'moment'
 
 import axios from 'axios'
 import API_URL from '../../components/apiurl'
@@ -17,7 +18,8 @@ export default function HomeScreen(props) {
     const [parkState, setParkState] = React.useState({ state: 'searching' })
     const [selectedParking, setSelectedParking] = React.useState({})
     const [distanceToParking, setDistanceToParking] = React.useState(0)
-    const [selectedVehicle, setSelectedVehicle] = React.useState(null)
+    const [selectedVehicle, setSelectedVehicle] = React.useState({ name: null, vehicle: null })
+    const [liveSession, setLiveSession] = React.useState(null)
 
     axios.defaults.baseURL = API_URL
     axios.defaults.headers.common['Authorization'] = props.userToken
@@ -62,7 +64,7 @@ export default function HomeScreen(props) {
         const vehicleId = user.data.parkState.vehicle
         const vehicle = await axios.get(`/vehicles/${vehicleId}`)
         const vehicleName = `${vehicle.data.manufacturer} ${vehicle.data.model} (${vehicle.data.idNumber})`
-        setSelectedVehicle(vehicleName)
+        setSelectedVehicle({ name: vehicleName, vehicle: vehicle.data })
 
         //setSelectedVehicle(await axios.get('/users/self').data.parkState.vehicle)
         setLocationState({
@@ -92,7 +94,21 @@ export default function HomeScreen(props) {
                     if (distance <= 100) {
                         setParkState({ state: 'arrived' })
                         Alert.alert('ARRIVED', 'Looks like you have arrived at ' + selectedParking.name.toUpperCase() + '! \n\nPress the PARK IN button to start your parking session', [
-                            { text: "PARK IN", onPress: () => setParkState({ state: 'parkedIn' }) }
+                            {
+                                text: "PARK IN", onPress: async () => {
+                                    try {
+                                        const session = await axios.post('/parkingsessions', {
+                                            user: props.userProfile._id,
+                                            parking: selectedParking._id,
+                                            vehicle: selectedVehicle.vehicle._id
+                                        })
+                                        setLiveSession(session.data)
+                                        setParkState({ state: 'parkedIn' })
+                                    } catch (err) {
+                                        console.log(err.message)
+                                    }
+                                }
+                            }
                         ],
                             { cancelable: false }
                         )
@@ -100,6 +116,12 @@ export default function HomeScreen(props) {
                 }
             )
         }
+    }
+
+    const promptPayment = () => {
+        setParkState({ state: 'searching' })
+        getLocation()
+
     }
 
     useEffect(() => {
@@ -153,11 +175,13 @@ export default function HomeScreen(props) {
                 }
 
                 {
-                    parkState.state === 'driving' && selectedParking ?
+                    parkState.state === 'driving' || parkState.state === 'parkedIn' ?
                         <MapView.Marker
                             provider={PROVIDER_DEFAULT}
                             coordinate={selectedParking.coordinates}
+                            title={parkState.state === 'driving' ? 'Selected Parking Lot' : 'You are Parked Here'}
                         >
+                            <Image style={{ height: 35, width: 35 }} source={require('../../assets/icon2.png')} />
                         </MapView.Marker>
                         : null
                 }
@@ -204,7 +228,7 @@ export default function HomeScreen(props) {
                 parkState.state === 'driving' ?
 
                     <View style={styles.drivingInfo}>
-                        <Text>Driving {selectedVehicle} To</Text>
+                        <Text>Driving {selectedVehicle.name} To</Text>
                         <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
                         <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
                         <Text>
@@ -226,8 +250,24 @@ export default function HomeScreen(props) {
                 //State : Parked In
                 parkState.state === 'parkedIn' ?
                     <View style={styles.parkedInInfo}>
-                        <Text>{selectedVehicle} is Parked</Text>
-                    </View>
+                        <View style={{ backgroundColor: 'white', borderRadius: 20, width: '50%', alignSelf: 'center', marginBottom: 2 }}>
+                            <Text style={{ color: 'hotpink', fontSize: 20, fontWeight: 'bold', alignSelf: 'center' }}>PARKED!</Text>
+                        </View>
+                        <Text style={{ color: '#c2f0f2', fontSize: 14, fontWeight: 'bold' }}>{selectedVehicle.name.toUpperCase()}</Text>
+                        <View style={styles.flexDisplay}>
+                            <Text style={{ color: 'silver' }}>Parking Lot: </Text>
+                            <Text style={{ color: 'white' }}>{selectedParking.name.toUpperCase()}</Text>
+                        </View>
+                        <Text style={{ color: 'white' }}>{`                      ${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
+                        <View style={styles.flexDisplay}>
+                            <Text style={{ color: 'silver' }}>Parked At: </Text>
+                            <Text style={{ color: 'white' }}>{new Moment(liveSession.timestamps.ingress).format('LT')}</Text>
+                            <Text style={{ color: 'hotpink' }}>{'   @$' + selectedParking.charge + '/hr'}</Text>
+                        </View>
+                        <TouchableOpacity style={{ ...styles.cancelButton, marginTop: 7 }} onPress={promptPayment}>
+                            <Text style={{ color: 'white' }}>PARK OUT</Text>
+                        </TouchableOpacity>
+                    </View >
                     : null
             }
 
@@ -241,6 +281,10 @@ export default function HomeScreen(props) {
 
 
 const styles = StyleSheet.create({
+    flexDisplay: {
+        display: 'flex',
+        flexDirection: 'row'
+    },
     map: {
         flex: 1
     },
@@ -276,9 +320,9 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     parkedInInfo: {
-        backgroundColor: '#7844fc',
+        backgroundColor: '#2d7cbd',
         width: '90%',
-        height: '20%',
+        height: '25%',
         alignSelf: 'center',
         position: 'absolute',
         bottom: 30,
@@ -288,8 +332,9 @@ const styles = StyleSheet.create({
     cancelButton: {
         backgroundColor: 'red',
         borderRadius: 5,
-        width: '22%',
+        width: '25%',
         alignItems: 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
+        padding: 1
     }
 })
