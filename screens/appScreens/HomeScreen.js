@@ -98,10 +98,6 @@ export default function HomeScreen(props) {
 
     return (
         <>
-            <Image
-                source={require('../../assets/header.png')}
-                style={styles.header}
-            />
             <MapView
                 showsUserLocation
                 style={styles.map}
@@ -201,11 +197,13 @@ export default function HomeScreen(props) {
                         <Text>Driving To</Text>
                         <Text style={{ color: '#ff196e', fontSize: 17 }}>{selectedParking.name}</Text>
                         <Text>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
-                        <Text>Distance:{
-                            distanceToParking > 1000 ?
-                                `${(distanceToParking / 1000).toFixed(2)}km`
-                                : `${distanceToParking}m`
-                        }</Text>
+                        <Text>
+                            Distance:{
+                                distanceToParking > 1000 ?
+                                    `${(distanceToParking / 1000).toFixed(2)}km`
+                                    : `${distanceToParking}m`
+                            }
+                        </Text>
 
                         <TouchableOpacity style={styles.cancelButton} onPress={() => { setParkState({ state: 'searching' }); getLocation() }}>
                             <Text style={{ color: 'white' }}>CANCEL</Text>
