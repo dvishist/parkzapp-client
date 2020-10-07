@@ -1,16 +1,18 @@
 import React, { useEffect } from 'react'
-import { Text, View, StyleSheet, Alert, Image, ScrollView, TouchableOpacity, Dimensions, Platform } from 'react-native'
+import { Text, View, StyleSheet, Alert, Image, ScrollView, TouchableOpacity, Dimensions, Modal, Platform } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE } from 'react-native-maps'
 import * as Permissions from 'expo-permissions'
-import mapStyle from '../../components/mapstyle'
-import API_KEY from '../../components/apiKey'
+
 import MapViewDirections from 'react-native-maps-directions';
 import * as geolib from 'geolib'
 import Moment from 'moment'
 
+
 import axios from 'axios'
 import API_URL from '../../components/apiurl'
-
+import mapStyle from '../../components/mapstyle'
+import API_KEY from '../../components/apiKey'
+import milisecondsToTime from '../../components/milisecondsToTime'
 
 export default function HomeScreen(props) {
 
@@ -32,6 +34,17 @@ export default function HomeScreen(props) {
         longitudeDelta: 0.03
 
     })
+
+    const checkState = async () => {
+        const state = props.userProfile.parkState
+        if (state.parkedIn) {
+
+            setSelectedParking(await axios.get(`/parkings/${state.parkingSession.parking}`))
+            setSelectedVehicle(await axios.get(`/vehicles/${state.parkingSession.vehicle}`))
+            setLiveSession(await axios.get(`/parkingsessions/${state.parkingSession}`))
+            setParkState({ state: 'parkedIn' })
+        }
+    }
 
     const getLocation = async () => {
         try {
@@ -55,9 +68,12 @@ export default function HomeScreen(props) {
     }
 
     const selectParking = async (parking, distance) => {
-        setParkState({
-            state: 'driving',
+        setLocationState({
+            ...locationState,
+            latitudeDelta: 0.008,
+            longitudeDelta: 0.008
         })
+
         setSelectedParking(parking)
         setDistanceToParking(distance)
         const user = await axios.get('users/self')
@@ -66,11 +82,8 @@ export default function HomeScreen(props) {
         const vehicleName = `${vehicle.data.manufacturer} ${vehicle.data.model} (${vehicle.data.idNumber})`
         setSelectedVehicle({ name: vehicleName, vehicle: vehicle.data })
 
-        //setSelectedVehicle(await axios.get('/users/self').data.parkState.vehicle)
-        setLocationState({
-            ...locationState,
-            latitudeDelta: 0.003,
-            longitudeDelta: 0.003
+        setParkState({
+            state: 'driving',
         })
     }
 
@@ -87,7 +100,11 @@ export default function HomeScreen(props) {
                         1)
 
                     //update distance on selected parking state
-                    setSelectedParking(selectedParking)
+                    setLocationState({
+                        ...locationState,
+                        latitude,
+                        longitude
+                    })
                     setDistanceToParking(distance)
 
                     //if distance is less than 10m, consider arrived
@@ -102,6 +119,13 @@ export default function HomeScreen(props) {
                                             parking: selectedParking._id,
                                             vehicle: selectedVehicle.vehicle._id
                                         })
+                                        await axios.patch('/users/self', {
+                                            parkState: {
+                                                parkedIn: true,
+                                                parkingSession: session.data._id,
+                                                vehicle: selectedVehicle.vehicle._id
+                                            }
+                                        })
                                         setLiveSession(session.data)
                                         setParkState({ state: 'parkedIn' })
                                     } catch (err) {
@@ -112,6 +136,7 @@ export default function HomeScreen(props) {
                         ],
                             { cancelable: false }
                         )
+
                     }
                 }
             )
@@ -119,9 +144,17 @@ export default function HomeScreen(props) {
     }
 
     const promptPayment = async () => {
-        console.log(liveSession._id)
-        await axios.post(`/parkingsessions/egress/${liveSession._id}`)
-        setParkState({ state: 'searching' })
+
+        const session = await axios.post(`/parkingsessions/egress/${liveSession._id}`)
+        setLiveSession(session.data)
+        await axios.patch('/users/self', {
+            parkState: {
+                parkedIn: false,
+                parkingSession: null,
+                vehicle: selectedVehicle.vehicle._id
+            }
+        })
+        setParkState({ state: 'payment' })
         getLocation()
 
     }
@@ -272,6 +305,55 @@ export default function HomeScreen(props) {
                     </View >
                     : null
             }
+            {
+                parkState.state === 'payment' ?
+                    <Modal
+                        visible={parkState.state === 'payment'}
+                        transparent={true}
+                        animationType="slide"
+                    >
+                        <View
+                            style={styles.paymentModal}
+                        >
+                            <Text style={{ color: 'beige', fontSize: 22, fontWeight: 'bold', marginBottom: 40, alignSelf: 'center' }}>Thankyou {props.userProfile.name.split(' ')[0]}, for using Parkzapp</Text>
+                            <Text style={{ color: 'silver' }} >Your Session Summary,</Text>
+                            <Text style={{ color: 'beige', fontWeight: 'bold', marginBottom: 5 }}>{new Moment(liveSession.timestamps.ingress).format('MMM Do, YYYY')}</Text>
+
+                            <Text style={{ color: 'beige', fontWeight: 'bold' }}>{selectedParking.name.toUpperCase()}</Text>
+                            <Text style={{ color: 'silver', fontWeight: 'bold', }}>{`${selectedParking.address.streetNumber} ${selectedParking.address.streetName}, ${selectedParking.address.city}`}</Text>
+                            <Text style={{ color: 'hotpink', fontWeight: 'bold', marginBottom: 10 }}>Rate: ${selectedParking.charge}/hr</Text>
+
+                            <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Text style={{ color: 'hotpink' }}>Parked In:       </Text>
+                                <Text style={{ color: 'white' }}>{new Moment(liveSession.timestamps.ingress).format("LTS")}</Text>
+                            </View>
+
+                            <View style={{ display: 'flex', flexDirection: 'row' }}>
+                                <Text style={{ color: 'hotpink' }}>Parked Out:    </Text>
+                                <Text style={{ color: 'white' }}>{new Moment(liveSession.timestamps.egress).format("LTS")}</Text>
+                            </View>
+
+                            <View style={{ display: 'flex', flexDirection: 'row', marginBottom: 30 }}>
+                                <Text style={{ color: 'hotpink' }}>Duration:         </Text>
+                                <Text style={{ color: 'white' }}>{milisecondsToTime(Math.abs(new Date(liveSession.timestamps.egress) - new Date(liveSession.timestamps.ingress)))}</Text>
+                            </View>
+
+                            <View style={{ display: 'flex', flexDirection: 'row', alignSelf: 'center' }}>
+                                <Text style={{ color: 'gold', fontWeight: 'bold', fontSize: 20 }}>TOTAL: ${((Math.abs(new Date(liveSession.timestamps.egress) - new Date(liveSession.timestamps.ingress)) / 1000 / 60 / 60) * selectedParking.charge).toFixed(2)}</Text>
+                                <Text style={{ color: 'white' }}>{}</Text>
+                            </View>
+
+                            <TouchableOpacity onPress={() => {
+                                setParkState({ state: 'searching' })
+                            }}>
+                                <View style={styles.payButton}>
+                                    <Text style={{ alignSelf: 'center', fontSize: 20, color: 'white', fontWeight: 'bold' }}>PAY NOW</Text>
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </Modal>
+                    : null
+            }
 
         </>
 
@@ -299,7 +381,8 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         marginHorizontal: 10,
         padding: 10,
-        width: Dimensions.get('window').width * 0.8
+        width: Dimensions.get('window').width * 0.8,
+        opacity: 0.7
     },
     selectButton: {
         backgroundColor: '#ebe6e8',
@@ -320,6 +403,7 @@ const styles = StyleSheet.create({
         bottom: 30,
         borderRadius: 15,
         padding: 10,
+        opacity: 0.8
     },
     parkedInInfo: {
         backgroundColor: '#2d7cbd',
@@ -330,6 +414,7 @@ const styles = StyleSheet.create({
         bottom: 30,
         borderRadius: 15,
         padding: 10,
+        opacity: 0.9
     },
     cancelButton: {
         backgroundColor: 'red',
@@ -338,5 +423,23 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         alignSelf: 'center',
         padding: 1
+    },
+    paymentModal: {
+        backgroundColor: '#2d7cbd',
+        justifyContent: 'center',
+        padding: 20,
+        alignSelf: 'center',
+        borderRadius: 25,
+        marginTop: '20%',
+        width: '80%',
+        height: '70%',
+        opacity: 0.8
+    },
+    payButton: {
+        marginTop: 30,
+        backgroundColor: 'red',
+        width: '40%',
+        borderRadius: 10,
+        alignSelf: 'center'
     }
 })
