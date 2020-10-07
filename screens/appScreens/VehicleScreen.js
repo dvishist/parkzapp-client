@@ -134,10 +134,8 @@ export default function VehicleScreen(props) {
     } else {
         return (
             <Modal
-                backgroundColor="black"
                 visible={modalActive}
                 transparent={true}
-                style={styles.registerModal}
                 animationType="slide"
             >
                 <View
