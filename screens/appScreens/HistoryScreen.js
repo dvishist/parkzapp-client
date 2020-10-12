@@ -31,6 +31,8 @@ export default function HistoryScreen(props) {
             })
 
             Promise.all(data).then(sessions => {
+                sessions = sessions.filter(session => session.timestamps.egress)
+
                 sessions = sessions.map(item => {
                     return { item, key: sessions.indexOf(item).toString() }
                 })

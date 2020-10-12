@@ -84,16 +84,16 @@ export default function App() {
 
   useEffect(() => {
     async function getToken() {
-      //let validLogin = false
+      let validLogin = false
       let userToken = null
       try {
         userToken = await AsyncStorage.getItem('userToken')
-        //validLogin = await axios.get(`/users/verify/${userToken}`)
+        validLogin = await axios.get(`/users/verify/${userToken}`)
       } catch (e) {
         console.log(e)
       }
       setIsLoading(false)
-      if (userToken) {
+      if (validLogin) {
         dispatch({ type: 'check-token', token: userToken })
       } else {
         dispatch({ type: 'logout' })
