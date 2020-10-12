@@ -52,19 +52,19 @@ export default function Dashboard(props) {
                                 switch (route.name) {
                                     case 'Home':
                                         iconName = 'md-map'
-                                        color = focused ? 'white' : '#4ecdc4'
+                                        color = focused ? 'white' : 'gray'
                                         break
                                     case 'History':
                                         iconName = 'ios-refresh'
-                                        color = focused ? 'white' : '#4ecdc4'
+                                        color = focused ? 'white' : 'gray'
                                         break
                                     case 'Vehicles':
                                         iconName = 'ios-car'
-                                        color = focused ? 'white' : '#4ecdc4'
+                                        color = focused ? 'white' : 'gray'
                                         break
                                     case 'Options':
                                         iconName = 'ios-menu'
-                                        color = focused ? 'white' : '#4ecdc4'
+                                        color = focused ? 'white' : 'gray'
                                         break
 
                                 }

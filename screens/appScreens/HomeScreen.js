@@ -32,19 +32,7 @@ export default function HomeScreen(props) {
         longitude: 144.9631,
         latitudeDelta: 0.03,
         longitudeDelta: 0.03
-
     })
-
-    const checkState = async () => {
-        const state = props.userProfile.parkState
-        if (state.parkedIn) {
-
-            setSelectedParking(await axios.get(`/parkings/${state.parkingSession.parking}`))
-            setSelectedVehicle(await axios.get(`/vehicles/${state.parkingSession.vehicle}`))
-            setLiveSession(await axios.get(`/parkingsessions/${state.parkingSession}`))
-            setParkState({ state: 'parkedIn' })
-        }
-    }
 
     const getLocation = async () => {
         try {
@@ -109,7 +97,6 @@ export default function HomeScreen(props) {
 
                     //if distance is less than 10m, consider arrived
                     if (distance <= 100) {
-                        setParkState({ state: 'arrived' })
                         Alert.alert('ARRIVED', 'Looks like you have arrived at ' + selectedParking.name.toUpperCase() + '! \n\nPress the PARK IN button to start your parking session', [
                             {
                                 text: "PARK IN", onPress: async () => {
@@ -136,6 +123,7 @@ export default function HomeScreen(props) {
                         ],
                             { cancelable: false }
                         )
+                        setParkState({ state: 'arrived' })
 
                     }
                 }
@@ -197,7 +185,7 @@ export default function HomeScreen(props) {
 
                 {
                     //directions to selected parking lot
-                    parkState.state === 'driving' && selectedParking ?
+                    parkState.state === 'driving' ?
                         <MapViewDirections
                             origin={{ latitude: locationState.latitude, longitude: locationState.longitude }}
                             destination={selectedParking.coordinates}
@@ -425,7 +413,7 @@ const styles = StyleSheet.create({
         padding: 1
     },
     paymentModal: {
-        backgroundColor: '#2d7cbd',
+        backgroundColor: 'slategray',
         justifyContent: 'center',
         padding: 20,
         alignSelf: 'center',
